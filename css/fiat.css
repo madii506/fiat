@@ -350,7 +350,7 @@ textarea.inp { height: 92px; padding: 12px 14px; resize: vertical; }
 .pcard-b p { margin: 0; color: var(--mu); font-size: 13px; max-height: 3.2em; overflow: hidden; }
 .mini-chart { height: 74px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); overflow: hidden; position: relative; }
 .mini-chart svg { width: 100%; height: 100%; display: block; }
-.mini-chart span { position: absolute; left: 10px; top: 8px; font: 11px var(--mono); color: var(--mu); }
+.mini-chart > span { position: absolute; left: 10px; top: 8px; font: 11px var(--mono); color: var(--mu); }
 .console { border: 1px solid var(--line); border-radius: 16px; background: #050607; padding: 14px 16px; font: 12.5px/1.8 var(--mono); color: var(--mu); min-height: 140px; max-height: 300px; overflow-y: auto; }
 .console .l { display: flex; gap: 10px; }
 .console .l i { font-style: normal; width: 14px; flex: none; }
@@ -811,3 +811,59 @@ body::before { content: ''; position: fixed; inset: 0; z-index: 300; pointer-eve
   .press-steps li span { font-size: 14px; }
 }
 @media (prefers-reduced-motion: reduce) { .cursor { display: none; } }
+
+/* ================= pass 4: smooth scroll, page transitions, nav, ghosts, flip ================= */
+html.lenis, html.lenis body { height: auto; }
+html.lenis { scroll-behavior: auto !important; }
+.lenis.lenis-stopped { overflow: clip; }
+.lenis [data-lenis-prevent] { overscroll-behavior: contain; }
+
+/* page-to-page: the old page lifts away, the new one rises in */
+@view-transition { navigation: auto; }
+::view-transition-old(root) { animation: vtOut .42s cubic-bezier(.4, 0, .2, 1) both; }
+::view-transition-new(root) { animation: vtIn .6s cubic-bezier(.2, .8, .2, 1) both; }
+@keyframes vtOut { to { opacity: 0; transform: translateY(-24px) scale(.985); } }
+@keyframes vtIn { from { opacity: 0; transform: translateY(36px); } }
+
+/* nav tucks away while reading, a pill marks where you are */
+.nav { transition: transform .45s cubic-bezier(.2, .8, .2, 1), background .3s; }
+.nav.tuck { transform: translateY(-100%); }
+.links { position: relative; }
+.links .pill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; border-radius: 999px; background: rgba(255, 178, 36, .1); box-shadow: inset 0 0 0 1px rgba(255, 178, 36, .28); opacity: 0; pointer-events: none; transition: transform .45s cubic-bezier(.2, .8, .2, 1), width .45s cubic-bezier(.2, .8, .2, 1), opacity .3s; }
+.links a { position: relative; z-index: 1; }
+.links a:hover, .links a.on { background: none; color: var(--tx); }
+.links a.on { color: var(--amb); }
+.btn.lg, .nav .btn.pri { transition: transform .35s cubic-bezier(.2, .8, .2, 1), background .2s, border-color .2s, box-shadow .2s; }
+
+/* board rows: an amber edge and a brighter Pair on hover */
+.bt tbody tr td:first-child { transition: box-shadow .2s; }
+.bt tbody tr:hover td:first-child { box-shadow: inset 3px 0 0 var(--amb); }
+.bt .pair { opacity: .55; transition: opacity .2s, border-color .2s, color .2s, background .2s; }
+.bt tbody tr:hover .pair { opacity: 1; border-color: var(--amb); color: #140c00; background: var(--amb); }
+
+/* coins before the first launch: ghost cards under a stamp */
+.ghost-wrap { position: relative; }
+.ghost { pointer-events: none; opacity: .5; filter: saturate(.4); }
+.ghost .gh-img { width: 52px; height: 52px; border-radius: 12px; border: 1px dashed rgba(255, 178, 36, .3); }
+.ghost .gh-l { display: block; height: 11px; width: 120px; border-radius: 4px; margin: 4px 0; background: linear-gradient(90deg, rgba(255, 255, 255, .05), rgba(255, 255, 255, .12), rgba(255, 255, 255, .05)); background-size: 200% 100%; animation: sk 1.6s linear infinite; }
+.ghost .gh-l.s { width: 70px; }
+.ghost-over { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 30px; text-align: center; background: radial-gradient(closest-side, rgba(6, 6, 7, .85), rgba(6, 6, 7, .2)); }
+.ghost-over .stamp { position: relative; font-size: clamp(18px, 2.4vw, 28px); }
+.ghost-over p { margin: 0; color: var(--mu); }
+.fx .ghost-over .stamp { animation: slam .6s .3s cubic-bezier(.3, 1.5, .5, 1) both; }
+
+/* launch: the note flips to its back */
+.press-note { cursor: pointer; }
+.flipper { position: relative; transform-style: preserve-3d; transition: transform .9s cubic-bezier(.2, .8, .2, 1); }
+.flipper.on { transform: rotateY(180deg); }
+.flipper .face { backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 6px; overflow: hidden; }
+.flipper .front { position: relative; }
+.flipper .back { position: absolute; inset: 0; transform: rotateY(180deg); background: #c9d6bd; }
+.flipper .back canvas { display: block; width: 100%; height: 100%; }
+.press-note .holo { transform-style: preserve-3d; }
+.flip-btn { position: absolute; right: 18px; bottom: 6px; z-index: 3; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line2); background: rgba(10, 10, 12, .8); color: var(--mu); font-size: 11px; }
+.flip-btn:hover { color: var(--amb); border-color: rgba(255, 178, 36, .5); }
+
+.faq p { overflow: hidden; }
+@media (max-width: 820px) { .nav.tuck { transform: none; } }
+@media (prefers-reduced-motion: reduce) { ::view-transition-old(root), ::view-transition-new(root) { animation: none; } }
