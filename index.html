@@ -20,7 +20,7 @@
 <link rel="preload" href="/fonts/inter-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/jetbrains-mono-latin-500-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/cinzel-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/css/fiat.css?v=3">
+<link rel="stylesheet" href="/css/fiat.css?v=4">
 </head>
 <body>
 <header class="nav">
@@ -99,15 +99,31 @@
   </div>
 </section>
 
-<section class="sec" id="how">
-  <div class="wrap">
-    <div class="sec-h rv"><div><div class="kick">How it works</div><h2><span class="w1">Three steps.</span><span class="foil">One transaction.</span></h2></div></div>
-    <div class="steps">
-      <div class="step rv"><div class="n">I</div><h3>Pick a currency</h3><p>47 to choose from.</p><div class="vis" id="v1"></div></div>
-      <div class="step rv"><div class="n">II</div><h3>Print your coin</h3><p>Name, ticker, picture.</p><div class="vis note-vis" id="v2"></div></div>
-      <div class="step rv"><div class="n">III</div><h3>Sign once</h3><p>Live on pump.fun, paired on-chain.</p><div class="vis" id="v3"></div></div>
+<section class="press-sec" id="how">
+  <div class="press-pin">
+    <div class="wrap press-grid">
+      <div class="press-copy">
+        <div class="kick">How it works</div>
+        <ol class="press-steps" id="ppSteps">
+          <li class="on"><b>I</b><span>Pick a currency</span></li>
+          <li><b>II</b><span>Print your coin</span></li>
+          <li><b>III</b><span>Sign once</span></li>
+        </ol>
+        <div class="press-bar"><i id="ppBar"></i></div>
+      </div>
+      <div class="press-stage" id="ppStage" aria-hidden="true">
+        <div class="pp-card" id="ppCard"><div class="pp-base" id="ppBase"></div><div class="pp-top" id="ppTop"></div><div class="pp-scan" id="ppScan"></div><div class="stamp ok" id="ppStamp">PRINTED</div></div>
+        <div class="pp-tag mono" id="ppCur">USD/TRY</div>
+        <div class="pp-memo mono" id="ppMemo">fiat:v1:TRY:LIRA · live on pump.fun</div>
+        <div class="burst" id="ppBurst"></div>
+      </div>
     </div>
-    <div class="nums rv">
+  </div>
+</section>
+
+<section class="sec sec-nums">
+  <div class="wrap">
+    <div class="nums">
       <div><b data-roll="0%">0%</b><span>FIAT fee</span></div>
       <div><b data-roll="1">1</b><span>transaction</span></div>
       <div><b data-roll="0">0</b><span>keys held by FIAT</span></div>
@@ -153,9 +169,7 @@
 
 <footer class="foot">
   <div class="wrap">
-    <div class="foot-top"><div class="seal" aria-hidden="true"><svg viewBox="0 0 120 120"><defs><path id="sc" d="M60 60m-44 0a44 44 0 1 1 88 0a44 44 0 1 1 -88 0"/></defs><circle cx="60" cy="60" r="56" fill="none" stroke="currentColor" stroke-width="2.5"/><circle cx="60" cy="60" r="34" fill="none" stroke="currentColor" stroke-width="1.2"/><text font-size="9.5" letter-spacing="2.2" fill="currentColor"><textPath href="#sc">· BY DECREE · NOT BY GOLD · BY DECREE · NOT BY GOLD</textPath></text><text x="60" y="70" text-anchor="middle" font-size="30" fill="currentColor">$</text></svg></div>
-      <span></span>
-      <div class="foot-l"><a href="/launch">Launch</a><a href="#board">Board</a><a href="#faq">FAQ</a><a id="footX" href="#" target="_blank" rel="noopener" hidden>X</a></div></div>
+    <div class="seal" aria-hidden="true"><svg viewBox="0 0 120 120"><defs><path id="sc" d="M60 60m-44 0a44 44 0 1 1 88 0a44 44 0 1 1 -88 0"/></defs><circle cx="60" cy="60" r="56" fill="none" stroke="currentColor" stroke-width="2.5"/><circle cx="60" cy="60" r="34" fill="none" stroke="currentColor" stroke-width="1.2"/><text font-size="9.5" letter-spacing="2.2" fill="currentColor"><textPath href="#sc">· BY DECREE · NOT BY GOLD · BY DECREE · NOT BY GOLD</textPath></text><text x="60" y="70" text-anchor="middle" font-size="30" fill="currentColor">$</text></svg></div>
     <div class="big-word" aria-hidden="true">FIAT</div>
   </div>
 </footer>
@@ -173,6 +187,6 @@
 </aside>
 
 <script type="importmap">{"imports":{"three":"/vendor/three.module.min.js"}}</script>
-<script type="module" src="/js/home.js?v=3"></script>
+<script type="module" src="/js/home.js?v=4"></script>
 </body>
 </html>
