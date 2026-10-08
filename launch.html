@@ -15,7 +15,7 @@
 <link rel="apple-touch-icon" href="/img/icon-180.png">
 <link rel="preload" href="/fonts/inter-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/cinzel-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/css/fiat.css?v=3">
+<link rel="stylesheet" href="/css/fiat.css?v=4">
 </head>
 <body>
 <header class="nav">
@@ -42,7 +42,7 @@
           <div class="box-b">
             <div class="ctrl" style="margin:0"><label class="search" style="max-width:none"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="5"/><path d="M11 11l3.5 3.5"/></svg><input id="cq" placeholder="Search" autocomplete="off" aria-label="Search currencies"></label>
               <div class="seg mono" id="csort"><button data-s="d1" class="on">24h</button><button data-s="d365">1y</button><button data-s="code">A–Z</button></div></div>
-            <div class="cgrid" id="cgrid"><span class="skel"></span></div>
+            <div class="cgrid" id="cgrid" data-lenis-prevent><span class="skel"></span></div>
           </div>
         </section>
         <section class="box" aria-labelledby="h2x">
@@ -78,7 +78,7 @@
 
       <aside class="side">
         <div class="press" id="press">
-          <div class="press-note"><div class="holo" id="pHolo"><div class="holo-in" id="pNote"></div><div class="scan" aria-hidden="true"></div><div class="stamp ok" id="pStamp">PRINTED</div></div><div class="burst" id="burst" aria-hidden="true"></div></div>
+          <div class="press-note" id="pPress" title="Tap to flip"><div class="holo" id="pHolo"><div class="flipper" id="pFlip"><div class="face front"><div class="holo-in" id="pNote"></div><div class="scan" aria-hidden="true"></div><div class="stamp ok" id="pStamp">PRINTED</div></div><div class="face back holo-in" id="pBack"></div></div></div><button type="button" class="flip-btn mono" id="flipBtn">↻ flip</button><div class="burst" id="burst" aria-hidden="true"></div></div>
           <div class="pcard-b">
             <div class="pc-row"><div class="pimg" id="pImg">?</div><div style="min-width:0"><h3 id="pName">Your coin<small>$TICKER</small></h3></div><button type="button" class="btn sm" id="saveNote" disabled>Save note</button></div>
             <div class="mini-chart" id="pChart"><span>pick a currency</span></div>
@@ -94,6 +94,6 @@
 
 
 <script src="/vendor/solana-lite.js" defer></script>
-<script type="module" src="/js/launch.js?v=3"></script>
+<script type="module" src="/js/launch.js?v=4"></script>
 </body>
 </html>
