@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Launch · FIAT</title>
+<title>FIAT</title>
 <meta name="description" content="Launch a memecoin paired with a real currency. One transaction on pump.fun; the pairing is written on-chain.">
 <meta name="theme-color" content="#060607">
 <meta property="og:title" content="Launch on FIAT">
@@ -15,13 +15,13 @@
 <link rel="apple-touch-icon" href="/img/icon-180.png">
 <link rel="preload" href="/fonts/inter-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/cinzel-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/css/fiat.css?v=2">
+<link rel="stylesheet" href="/css/fiat.css?v=3">
 </head>
 <body>
 <header class="nav">
   <div class="wrap nav-in">
-    <a class="logo" href="/" aria-label="FIAT home">fiat</a>
-    <nav class="links" aria-label="Pages"><a href="/#board">Board</a><a href="/#spotlight">Spotlight</a><a href="/#how">How it works</a><a href="/#coins">Coins</a><a href="/#faq">FAQ</a></nav>
+    <span class="nav-l"></span>
+    <nav class="links" aria-label="Pages"><a href="/#board">Board</a><a href="/#spotlight">Spotlight</a><a href="/#how">How</a><a href="/#coins">Coins</a><a href="/#faq">FAQ</a></nav>
     <div class="nav-r"><button class="ca-chip" id="caChip" hidden></button><button class="btn" id="wBtn">Connect wallet</button><button class="burger" aria-label="Menu"><span></span><span></span></button></div>
   </div>
 </header>
@@ -30,77 +30,70 @@
   <div class="lp-rose" aria-hidden="true"></div>
   <div class="wrap">
     <div class="lp-head">
-      <div><div class="kick"><span class="no">№ 00</span>The printing press</div><h1><span class="w1">Print a coin.</span><span class="foil">Pair it with a currency.</span></h1>
-        <p class="lp-sub">One transaction on pump.fun. The pairing is written on-chain, your wallet signs, and FIAT takes no fee.</p></div>
+      <div><div class="kick">The printing press</div><h1><span class="w1">Print a coin.</span><span class="foil">Pair it with a currency.</span></h1></div>
       <ol class="lp-prog" aria-label="Progress"><li id="ps1"><b>I</b><span>Currency</span></li><li id="ps2"><b>II</b><span>Coin</span></li><li id="ps3"><b>III</b><span>Launch</span></li></ol>
     </div>
-    <div class="notice" id="paused" hidden><div class="stamp sm on">PAUSED</div><div><b>Official notice.</b> Launches open when $FIAT is out. You can set everything up and preview your note now. The official CA will only be posted on this site and our X.</div><span class="mono notice-r" id="regChip">pairing goes on-chain</span></div>
+    <div class="notice" id="paused" hidden><div class="stamp sm on">PAUSED</div><div>Launches open when <b>$FIAT</b> is out. Preview your note now.</div></div>
 
     <div class="lp-grid">
       <div>
-        <!-- I currency -->
         <section class="box" aria-labelledby="h1x">
-          <div class="box-h"><span class="n">I</span><h2 id="h1x">Pick a currency</h2><span class="r" id="curSel">none picked</span></div>
+          <div class="box-h"><span class="n">I</span><h2 id="h1x">Currency</h2><span class="r" id="curSel"></span></div>
           <div class="box-b">
-            <div class="ctrl" style="margin:0"><label class="search" style="max-width:none"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="5"/><path d="M11 11l3.5 3.5"/></svg><input id="cq" placeholder="Search 47 currencies" autocomplete="off" aria-label="Search currencies"></label>
-              <div class="seg mono" id="csort"><button data-s="d1" class="on">Weakest 24h</button><button data-s="d365">Weakest 1y</button><button data-s="code">A–Z</button></div></div>
+            <div class="ctrl" style="margin:0"><label class="search" style="max-width:none"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="5"/><path d="M11 11l3.5 3.5"/></svg><input id="cq" placeholder="Search" autocomplete="off" aria-label="Search currencies"></label>
+              <div class="seg mono" id="csort"><button data-s="d1" class="on">24h</button><button data-s="d365">1y</button><button data-s="code">A–Z</button></div></div>
             <div class="cgrid" id="cgrid"><span class="skel"></span></div>
-            <div class="cur-pick" id="curPick" hidden></div>
           </div>
         </section>
-        <!-- II coin -->
         <section class="box" aria-labelledby="h2x">
-          <div class="box-h"><span class="n">II</span><h2 id="h2x">Print your coin</h2><span class="r">shown on pump.fun</span></div>
+          <div class="box-h"><span class="n">II</span><h2 id="h2x">Coin</h2></div>
           <div class="box-b">
             <div class="row2">
               <div class="field"><label for="fName">Name <small id="nameN">0/32</small></label><input class="inp" id="fName" maxlength="32" placeholder="Lira Coin" autocomplete="off"></div>
               <div class="field"><label for="fSym">Ticker <small id="symN">0/10</small></label><input class="inp mono" id="fSym" maxlength="10" placeholder="LIRA" autocomplete="off" style="text-transform:uppercase"></div>
             </div>
-            <div class="field"><label for="fDesc">Description <small><button type="button" class="btn sm" id="autoDesc" style="height:24px;padding:0 8px">Write one for me</button></small></label><textarea class="inp" id="fDesc" maxlength="600" placeholder="What is this coin about?"></textarea></div>
-            <div class="field"><label>Picture <small>PNG, JPG, GIF or WEBP · max 4 MB · square works best</small></label>
-              <div class="drop" id="drop"><div class="pv" id="pv">no picture</div><div><b>Drop an image, paste one, or print a banknote.</b><p>FIAT can print a banknote for your currency: an original design, yours to use. Your picture also goes into the portrait on your note.</p>
-                <div class="acts"><label class="btn sm" for="file">Choose file</label><input type="file" id="file" accept="image/png,image/jpeg,image/gif,image/webp" class="sr"><button type="button" class="btn sm" id="mkNote">Print a banknote</button><button type="button" class="btn sm" id="clrImg" hidden>Remove</button></div></div></div></div>
-            <div class="row3">
-              <div class="field"><label for="fX">X link <small>optional</small></label><input class="inp" id="fX" placeholder="https://x.com/…" autocomplete="off"></div>
-              <div class="field"><label for="fWeb">Website <small>optional</small></label><input class="inp" id="fWeb" placeholder="https://…" autocomplete="off"></div>
-              <div class="field"><label for="fTg">Telegram <small>optional</small></label><input class="inp" id="fTg" placeholder="https://t.me/…" autocomplete="off"></div>
-            </div>
+            <div class="field"><label for="fDesc">Description <small><button type="button" class="btn sm" id="autoDesc" style="height:24px;padding:0 8px">Auto</button></small></label><textarea class="inp" id="fDesc" maxlength="600" placeholder="Optional"></textarea></div>
+            <div class="field"><label>Picture</label>
+              <div class="drop" id="drop"><div class="pv" id="pv">none</div><div><b>Drop, paste or print one.</b>
+                <div class="acts"><label class="btn sm" for="file">Choose file</label><input type="file" id="file" accept="image/png,image/jpeg,image/gif,image/webp" class="sr"><button type="button" class="btn sm pri" id="mkNote">Print a banknote</button><button type="button" class="btn sm" id="clrImg" hidden>Remove</button></div></div></div></div>
+            <details class="links-d"><summary>Links <small>optional</small></summary>
+              <div class="row3">
+                <div class="field"><label for="fX">X</label><input class="inp" id="fX" placeholder="https://x.com/…" autocomplete="off"></div>
+                <div class="field"><label for="fWeb">Website</label><input class="inp" id="fWeb" placeholder="https://…" autocomplete="off"></div>
+                <div class="field"><label for="fTg">Telegram</label><input class="inp" id="fTg" placeholder="https://t.me/…" autocomplete="off"></div>
+              </div></details>
           </div>
         </section>
-        <!-- III buy + launch -->
         <section class="box" aria-labelledby="h3x">
-          <div class="box-h"><span class="n">III</span><h2 id="h3x">First buy &amp; launch</h2><span class="r">optional buy, same transaction</span></div>
+          <div class="box-h"><span class="n">III</span><h2 id="h3x">Launch</h2></div>
           <div class="box-b">
-            <div class="field"><label>First buy (SOL) <small>buy your own coin at launch, before anyone else</small></label>
-              <div class="presets" id="buyP"><button data-v="0" class="on">None</button><button data-v="0.1">0.1</button><button data-v="0.25">0.25</button><button data-v="0.5">0.5</button><button data-v="1">1</button><button data-v="2">2</button></div>
-              <input class="inp mono" id="fBuy" inputmode="decimal" value="0" aria-label="First buy in SOL"></div>
-            <div class="field"><label>Max slippage on the first buy</label><div class="seg mono" id="slip"><button data-v="5">5%</button><button data-v="10" class="on">10%</button><button data-v="15">15%</button><button data-v="25">25%</button></div></div>
+            <div class="field"><label>First buy <small>SOL · optional</small></label>
+              <div class="presets" id="buyP"><button data-v="0" class="on">None</button><button data-v="0.1">0.1</button><button data-v="0.25">0.25</button><button data-v="0.5">0.5</button><button data-v="1">1</button><button data-v="2">2</button><input class="inp mono" id="fBuy" inputmode="decimal" value="0" aria-label="First buy in SOL"></div></div>
+            <div class="field" id="slipF"><label>Slippage</label><div class="seg mono" id="slip"><button data-v="5">5%</button><button data-v="10" class="on">10%</button><button data-v="15">15%</button><button data-v="25">25%</button></div></div>
             <div class="sum" id="sum"></div>
-            <div class="go"><button class="btn pri lg" id="goBtn">Connect wallet to launch</button><span class="mu" style="font-size:12px;text-align:center">FIAT takes no fee. Your wallet signs. The new mint's key is made in this browser and used once.</span></div>
+            <div class="go"><button class="btn pri lg" id="goBtn">Connect wallet to launch</button></div>
           </div>
         </section>
       </div>
 
       <aside class="side">
         <div class="press" id="press">
-          <div class="press-h"><span class="k2">Preview · your note</span><button type="button" class="btn sm" id="saveNote" disabled>Save note</button></div>
           <div class="press-note"><div class="holo" id="pHolo"><div class="holo-in" id="pNote"></div><div class="scan" aria-hidden="true"></div><div class="stamp ok" id="pStamp">PRINTED</div></div><div class="burst" id="burst" aria-hidden="true"></div></div>
           <div class="pcard-b">
-            <div class="pc-row"><div class="pimg" id="pImg">picture</div><div style="min-width:0"><h3 id="pName">Your coin<small>$TICKER</small></h3><p id="pDesc">Pick a currency and name your coin.</p></div><span class="tag n vsbadge" id="pBadge">vs —</span></div>
+            <div class="pc-row"><div class="pimg" id="pImg">?</div><div style="min-width:0"><h3 id="pName">Your coin<small>$TICKER</small></h3></div><button type="button" class="btn sm" id="saveNote" disabled>Save note</button></div>
             <div class="mini-chart" id="pChart"><span>pick a currency</span></div>
-            <div class="vs"><div>coin 24h<b class="mu">new</b></div><span class="v">vs</span><div id="pFx">— 24h<b class="mu">—</b></div></div>
           </div>
         </div>
-        <div class="paper"><div class="paper-h"><b>YOUR TRANSACTION</b><span id="pTxState">NOT SENT</span></div><pre id="pTx"></pre><div class="paper-f"><span class="bars" aria-hidden="true"></span><span>FIAT FEE <b>0.00 SOL</b></span></div></div>
-        <div class="console" id="log" aria-live="polite"><div class="l"><i>›</i><span>Ready. Nothing is sent until you press launch and sign.</span></div></div>
+        <div class="paper"><div class="paper-h"><b>YOUR TRANSACTION</b><span id="pTxState">NOT SENT</span></div><pre id="pTx"></pre></div>
+        <div class="console" id="log" aria-live="polite" hidden></div>
         <div class="done" id="done" hidden></div>
       </aside>
     </div>
   </div>
 </main>
-<footer class="foot"><div class="micro" aria-hidden="true"><div class="micro-t">LEGAL TENDER UNTIL FURTHER NOTICE · NOT BACKED BY ANYTHING · PRINTED ON DEMAND · BY DECREE, NOT BY GOLD · LEGAL TENDER UNTIL FURTHER NOTICE · NOT BACKED BY ANYTHING · PRINTED ON DEMAND · BY DECREE, NOT BY GOLD · </div></div><div class="wrap foot-in" style="padding-top:28px"><span>fiat · every coin has a currency · not financial advice, not a peg</span><span><a href="/">Board</a><a href="/#faq">FAQ</a></span></div></footer>
+
 
 <script src="/vendor/solana-lite.js" defer></script>
-<script type="module" src="/js/launch.js?v=2"></script>
+<script type="module" src="/js/launch.js?v=3"></script>
 </body>
 </html>

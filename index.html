@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>FIAT · your coin vs. the lira</title>
+<title>FIAT</title>
 <meta name="description" content="Pair any memecoin with a real currency. Launch on pump.fun in one transaction; the live exchange rate sits right beside your coin. 47 currencies, one dollar.">
 <meta name="theme-color" content="#060607">
 <meta property="og:type" content="website">
@@ -20,13 +20,13 @@
 <link rel="preload" href="/fonts/inter-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/jetbrains-mono-latin-500-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/cinzel-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/css/fiat.css?v=2">
+<link rel="stylesheet" href="/css/fiat.css?v=3">
 </head>
 <body>
 <header class="nav">
   <div class="wrap nav-in">
-    <a class="logo" href="/" aria-label="FIAT home">fiat</a>
-    <nav class="links" aria-label="Sections"><a href="#board">Board</a><a href="#spotlight">Spotlight</a><a href="#how">How it works</a><a href="#coins">Coins</a><a href="#token">$FIAT</a><a href="#faq">FAQ</a></nav>
+    <span class="nav-l"></span>
+    <nav class="links" aria-label="Sections"><a href="#board">Board</a><a href="#spotlight">Spotlight</a><a href="#how">How</a><a href="#coins">Coins</a><a href="#token">$FIAT</a><a href="#faq">FAQ</a></nav>
     <div class="nav-r"><button class="ca-chip" id="caChip" hidden></button><a class="btn pri" href="/launch">Launch a coin</a><button class="burger" aria-label="Menu"><span></span><span></span></button></div>
   </div>
 </header>
@@ -37,48 +37,45 @@
   <div class="stage" id="stage" aria-hidden="true"><img class="fallback" id="heroImg" src="/img/stack.jpg" alt="" hidden>
     <div class="hcards" id="hcards">
       <div class="hcard hc1"><span class="k"><b id="hc1Pair">USD/TRY</b><span class="tag daily" id="hc1Tag">DAILY</span></span><span class="v led" id="hc1Rate">—</span><span class="d" id="hc1D">—</span><div class="sp" id="hc1Sp"></div></div>
-      <div class="hcard hc2"><span class="k">$100 in <b id="hc2Code">TRY</b>, one year ago</span><span class="v" id="hc2V">—</span><span class="d">worth today, in dollars</span></div>
-      <div class="hcard hc3"><span class="k">since you opened this page</span><span class="v mono" id="hc3V">—</span><span class="d" id="hc3D">$100 in TRY at its 1-year pace</span></div>
+      <div class="hcard hc3"><span class="k">$100 in <b id="hc3C">TRY</b> · live</span><span class="v mono" id="hc3V">—</span><span class="d">since you opened this page</span></div>
     </div>
   </div>
   <div class="hero-in">
-    <span class="chip"><span class="dot live"></span>Every coin has a currency</span>
     <h1>Your coin<span class="l2">vs. the <span class="rot"><span id="rotWord">lira</span></span>.</span></h1>
-    <p class="sub">Pair any memecoin with a <b>real currency</b>. Launch on pump.fun in one transaction, and its exchange rate sits right beside your coin. The pairing is written on-chain.</p>
+    <p class="sub">Pair any memecoin with a <b>real currency</b>. One transaction on pump.fun.</p>
     <div class="cta"><a class="btn pri lg" href="/launch">Launch a coin <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a><a class="btn lg" href="#board">See the board</a></div>
     <div class="ticket">
       <div class="hstat"><span>Currencies</span><b id="hsN">—</b></div>
       <div class="hstat"><span>Coins paired</span><b id="hsCoins">—</b></div>
       <div class="hstat"><span>Weakest today</span><b id="hsWorst">—</b></div>
-      <div class="hstat sn"><span>Serial</span><b>FT 00000001 ¤</b></div>
     </div>
   </div>
-  <a class="scroll-hint" href="#board">SCROLL · THE BOARD ↓</a>
 </section>
 
 <div class="tape" aria-label="Exchange rates"><div class="tape-track" id="tape"><div class="tape-item"><span class="c">LOADING RATES</span></div></div></div>
 
+<section class="river" id="river" aria-hidden="true"><div class="river-word" id="rvw">BY DECREE · NOT BY GOLD · BY DECREE · NOT BY GOLD</div><div class="river-row" id="rv1"></div><div class="river-row" id="rv2"></div></section>
+
 <section class="sec" id="board">
   <div class="wrap">
     <div class="sec-h">
-      <div><div class="kick"><span class="no">№ 01</span>The board</div><h2><span class="w1"><span id="bN">47</span> currencies.</span><span class="foil">One dollar.</span></h2>
-        <p>Every currency you can pair a coin with, priced against the US dollar. Red means the currency lost value. Tap any row for its chart.</p></div>
-      <div class="seg mono" id="period" role="tablist" aria-label="Highlight period"><button data-p="d1" class="on">24H</button><button data-p="d7">7D</button><button data-p="d30">30D</button><button data-p="d365">1Y</button></div>
+      <div><div class="kick">The board</div><h2><span class="w1"><span id="bN">47</span> currencies.</span><span class="foil">One dollar.</span></h2></div>
+      <div class="seg mono" id="period" role="tablist" aria-label="Period"><button data-p="d1" class="on">24H</button><button data-p="d7">7D</button><button data-p="d30">30D</button><button data-p="d365">1Y</button></div>
     </div>
-    <div class="breadth" id="breadth"><div class="br-bar"><i class="dn" id="brDn"></i><i class="fl" id="brFl"></i><i class="up" id="brUp"></i></div><div class="br-kv" id="brKv"><span class="skel" style="width:60%"></span></div></div>
+    <div class="breadth" id="breadth"><div class="br-kv" id="brKv"><span class="skel" style="width:60%"></span></div><div class="br-bar"><i class="dn" id="brDn"></i><i class="fl" id="brFl"></i><i class="up" id="brUp"></i></div></div>
     <div class="ctrl">
-      <label class="search"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="5"/><path d="M11 11l3.5 3.5"/></svg><input id="q" placeholder="Search lira, NGN, Japan…" autocomplete="off" aria-label="Search currencies"></label>
+      <label class="search"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="5"/><path d="M11 11l3.5 3.5"/></svg><input id="q" placeholder="Search" autocomplete="off" aria-label="Search currencies"></label>
       <div class="seg" id="regions"><button class="on" data-r="">All</button><button data-r="Americas">Americas</button><button data-r="Europe">Europe</button><button data-r="Africa">Africa</button><button data-r="Middle East">Middle East</button><button data-r="Asia">Asia</button><button data-r="Oceania">Oceania</button></div>
       <div class="seg mono view" id="view"><button data-v="table" class="on">Table</button><button data-v="heat">Heatmap</button></div>
     </div>
     <div class="board" id="tableView">
       <table class="bt" id="bt">
         <thead><tr>
-          <th class="l" data-s="code">Currency</th><th data-s="rate">1 USD =</th><th data-s="d1">24H</th><th class="h-7" data-s="d7">7D</th><th class="h-30" data-s="d30">30D</th><th class="h-1y" data-s="d365">1Y</th><th class="h-spark">30D chart</th><th class="h-90" data-s="coins">Coins</th><th class="h-pair"></th>
+          <th class="l" data-s="code">Currency</th><th data-s="rate">1 USD =</th><th data-s="d1">24H</th><th class="h-7" data-s="d7">7D</th><th class="h-1y" data-s="d365">1Y</th><th class="h-spark">30D</th><th class="h-pair"></th>
         </tr></thead>
-        <tbody id="rows"><tr><td colspan="9"><span class="skel"></span></td></tr><tr><td colspan="9"><span class="skel"></span></td></tr><tr><td colspan="9"><span class="skel"></span></td></tr></tbody>
+        <tbody id="rows"><tr><td colspan="7"><span class="skel"></span></td></tr><tr><td colspan="7"><span class="skel"></span></td></tr><tr><td colspan="7"><span class="skel"></span></td></tr></tbody>
       </table>
-      <div class="board-foot"><span id="bSrc">Loading rates…</span><span><span class="tag live">LIVE</span> intraday quote &nbsp; <span class="tag daily">DAILY</span> daily reference rate</span></div>
+      <div class="board-foot"><span id="bSrc">Loading rates…</span><span><span class="tag live">LIVE</span> intraday</span></div>
     </div>
     <div class="heat" id="heatView" hidden></div>
   </div>
@@ -86,16 +83,16 @@
 
 <section class="sec" id="spotlight">
   <div class="wrap">
-    <div class="sec-h rv"><div><div class="kick"><span class="no">№ 02</span>Spotlight</div><h2><span class="w1">Fiat, losing.</span><span class="foil">In real time.</span></h2><p>The weakest currency of the day, and the ones that lost the most over a year. Each note is dissolved by exactly how much value its currency lost.</p></div></div>
+    <div class="sec-h rv"><div><div class="kick">Spotlight</div><h2><span class="w1">Fiat, losing.</span><span class="foil">In real time.</span></h2></div></div>
     <div class="spot">
-      <div class="card worst-card rv" id="worstCard"><div class="glow"></div><div class="k2">Weakest currency · <span id="wPer">24h</span></div>
+      <div class="card worst-card rv" id="worstCard"><div class="glow"></div><div class="k2">Weakest today</div>
         <div class="wnote" id="wNote"><div class="stamp" id="wStamp">DEVALUED</div></div>
-        <div class="worst" id="worst"><div><div class="wn">—</div><div class="wd mu">—</div><p>Loading…</p></div></div>
-        <div class="cta" style="margin-top:18px"><a class="btn pri" id="worstPair" href="/launch">Pair a coin with it</a><button class="btn" id="worstOpen">Open chart</button></div></div>
-      <div class="card rv"><div class="k2">Fiat graveyard · lost the most in 1 year</div><ol class="grave" id="grave"></ol><div class="grave-f mono">note dissolved = value lost vs the dollar</div></div>
+        <div class="worst" id="worst"><div class="wn">—</div></div>
+        <div class="cta" style="margin-top:18px"><a class="btn pri" id="worstPair" href="/launch">Pair a coin with it</a><button class="btn" id="worstOpen">Chart</button></div></div>
+      <div class="card rv"><div class="k2">Graveyard · 1 year</div><ol class="grave" id="grave"></ol></div>
     </div>
     <div class="melt rv">
-      <div class="melt-h"><div><div class="k2">The melt · live</div><h3>$100, melting while you watch.</h3><p class="mu">What $100 held in each currency is worth since you opened this page, if it keeps moving at its own 1-year pace. A projection from real rates, not a forecast.</p></div>
+      <div class="melt-h"><div><div class="k2">The melt · live</div><h3>$100, melting while you watch.</h3><p class="mu">At each currency's own 1-year pace. Not a forecast.</p></div>
         <div class="melt-clock mono"><span>on this page</span><b id="mClock">00:00</b></div></div>
       <div class="melts" id="melts"></div>
     </div>
@@ -104,33 +101,24 @@
 
 <section class="sec" id="how">
   <div class="wrap">
-    <div class="sec-h rv"><div><div class="kick"><span class="no">№ 03</span>How it works</div><h2><span class="w1">Three steps.</span><span class="foil">One transaction.</span></h2><p>FIAT is a pump.fun launcher. You keep your creator fees, FIAT takes nothing, and the currency pairing goes on-chain with the coin.</p></div></div>
+    <div class="sec-h rv"><div><div class="kick">How it works</div><h2><span class="w1">Three steps.</span><span class="foil">One transaction.</span></h2></div></div>
     <div class="steps">
-      <div class="step rv"><div class="n">I</div><h3>Pick a currency</h3><p>47 to choose from: the lira, the peso, the naira, the yen, the krona. Its live rate becomes your coin's other half.</p><div class="vis" id="v1"></div></div>
-      <div class="step rv"><div class="n">II</div><h3>Print your coin</h3><p>Name, ticker, a picture (or let FIAT print you a banknote) and an optional first buy.</p><div class="vis note-vis" id="v2"></div></div>
-      <div class="step rv"><div class="n">III</div><h3>Sign one transaction</h3><p>Your wallet signs. The coin is created on pump.fun with the pairing written into the same transaction.</p><div class="vis" id="v3"></div></div>
+      <div class="step rv"><div class="n">I</div><h3>Pick a currency</h3><p>47 to choose from.</p><div class="vis" id="v1"></div></div>
+      <div class="step rv"><div class="n">II</div><h3>Print your coin</h3><p>Name, ticker, picture.</p><div class="vis note-vis" id="v2"></div></div>
+      <div class="step rv"><div class="n">III</div><h3>Sign once</h3><p>Live on pump.fun, paired on-chain.</p><div class="vis" id="v3"></div></div>
     </div>
-    <div class="receipt">
-      <div class="paper rv" id="receipt"><div class="paper-h"><b>TRANSACTION RECEIPT</b><span>FIAT · SOLANA MAINNET</span></div>
-<pre><span class="c">// what your launch transaction contains</span>
-<span class="k">1</span>  pump.fun  create_v2     <span class="s">name, ticker, metadata</span>
-<span class="k">2</span>  pump.fun  buy           <span class="s">your first buy (optional)</span>
-<span class="k">3</span>  memo      <span class="s">"fiat:v1:TRY:LIRA"</span>   <span class="c">← the pairing</span>
-<span class="k">4</span>  system    tag           <span class="s">registry <span id="regShort">…</span></span>
-<span class="c">// signed by: your wallet + the new mint. nothing else.</span></pre>
-        <div class="paper-f"><span class="bars" aria-hidden="true"></span><span>FIAT FEE <b>0.00 SOL</b></span></div><div class="stamp sm on">SIGNED</div></div>
-      <div class="facts">
-        <div class="fact rv"><span class="ic">0%</span><div><b>FIAT takes no fee.</b> You only pay pump.fun's normal fees and the network fee. Creator fees stay yours.</div></div>
-        <div class="fact rv"><span class="ic">⛓</span><div><b>The pairing is public.</b> Every FIAT launch carries a memo and lists the FIAT registry, so anyone can find all of them on-chain.</div></div>
-        <div class="fact rv"><span class="ic">¤</span><div><b>No keys, no custody.</b> FIAT builds the transaction, your wallet signs it. The registry is a program address nobody controls.</div></div>
-      </div>
+    <div class="nums rv">
+      <div><b data-roll="0%">0%</b><span>FIAT fee</span></div>
+      <div><b data-roll="1">1</b><span>transaction</span></div>
+      <div><b data-roll="0">0</b><span>keys held by FIAT</span></div>
+      <div><b data-roll="100%">100%</b><span>creator fees to you</span></div>
     </div>
   </div>
 </section>
 
 <section class="sec" id="coins">
   <div class="wrap">
-    <div class="sec-h rv"><div><div class="kick"><span class="no">№ 04</span>Coins</div><h2><span class="w1">Coins vs. their fiat.</span><span class="foil">Read from the chain.</span></h2><p>Every coin launched through FIAT, next to the currency it's paired with. Is the coin beating its fiat today?</p></div>
+    <div class="sec-h rv"><div><div class="kick">Coins</div><h2><span class="w1">Coins vs. their fiat.</span><span class="foil">Read from the chain.</span></h2></div>
       <div class="seg" id="coinSort"><button class="on" data-s="new">Newest</button><button data-s="mcap">Market cap</button><button data-s="beat">Beating fiat</button></div></div>
     <div id="coinBox"><div class="coins-empty"><span class="skel" style="width:40%"></span></div></div>
   </div>
@@ -138,42 +126,37 @@
 
 <section class="sec" id="token">
   <div class="wrap">
-    <div class="sec-h rv"><div><div class="kick"><span class="no">№ 05</span>$FIAT</div><h2><span class="w1">The coin of the board.</span><span class="foil">Backed by nothing.</span></h2></div></div>
+    <div class="sec-h rv"><div><div class="kick">$FIAT</div><h2><span class="w1">The coin of the board.</span><span class="foil">Backed by nothing.</span></h2></div></div>
     <div class="tok">
-      <div class="tok-note rv"><div class="holo" id="tokNote"><div class="holo-in" id="tokNoteIn" role="img" aria-label="The FIAT note: one hundred trillion, legal tender until further notice"></div><div class="stamp" id="tokStamp">NOT LAUNCHED</div></div><p class="mono hint">move your cursor over the note</p></div>
-      <div class="card tok-card rv"><div class="k2">Official contract address</div><h3 id="tokTitle">$FIAT</h3><p class="mu" id="tokNote2" style="margin:8px 0 0">The official $FIAT contract address will only ever be posted here and on our X.</p>
+      <div class="tok-note rv"><div class="holo" id="tokNote"><div class="holo-in" id="tokNoteIn" role="img" aria-label="The FIAT note: one hundred trillion, legal tender until further notice"></div><div class="stamp" id="tokStamp">NOT LAUNCHED</div></div></div>
+      <div class="card tok-card rv"><div class="k2">Contract address</div>
         <div class="ca"><span class="ca-l">CA</span><code id="tokCa">Not launched yet</code><button class="btn sm" id="tokCopy" disabled>Copy</button></div>
         <div class="cta" id="tokLinks" style="margin-top:16px"></div>
-        <ul><li>Launches on FIAT open when $FIAT is out. Until then nothing can be launched here.</li><li>FIAT charges no fee on launches. It's a tool, $FIAT is the meme.</li><li>Registry: <a id="regLink" class="mono amb" href="#" target="_blank" rel="noopener">…</a></li></ul></div>
+        <p class="tok-f mono">Only posted here and on our X · registry <a id="regLink" class="amb" href="#" target="_blank" rel="noopener">…</a></p></div>
     </div>
   </div>
 </section>
 
 <section class="sec" id="faq">
   <div class="wrap">
-    <div class="sec-h rv"><div><div class="kick"><span class="no">№ 06</span>FAQ</div><h2><span class="w1">Questions.</span><span class="foil">Answered in plain words.</span></h2></div></div>
+    <div class="sec-h rv"><div><div class="kick">FAQ</div><h2><span class="w1">Questions.</span></h2></div></div>
     <div class="faq rv">
-      <details open><summary>What does "pairing" a coin with a currency mean?</summary><p>Your coin is a normal pump.fun coin. The pairing is a label written into its launch transaction as a memo (<code>fiat:v1:TRY:LIRA</code>). FIAT reads it from the chain and shows your coin next to that currency's exchange rate. It doesn't peg, back or link the coin's price to the currency.</p></details>
-      <details><summary>Where do the exchange rates come from?</summary><p>Daily reference rates come from the open fawazahmed0 currency-api (published daily for 200+ currencies). Where an intraday quote is available, the board marks the row LIVE. Everything else is labelled DAILY with its date. Nothing is estimated or invented.</p></details>
-      <details><summary>What is "the melt"?</summary><p>A live projection: $100 held in a currency, moving at that currency's own pace over the last year, counted from the moment you opened the page. It uses the real 1-year change from the board. It is not a forecast.</p></details>
-      <details><summary>What does a launch cost?</summary><p>FIAT takes no fee. pump.fun charges its normal fees, the network charges a small fee, and your first buy (optional) is whatever you choose. Have a little extra SOL, about 0.03, for rent and fees.</p></details>
-      <details><summary>Who gets the creator fees?</summary><p>You do. The wallet that launches the coin is its creator on pump.fun, exactly like launching on pump.fun directly.</p></details>
-      <details><summary>Can FIAT touch my wallet or my coin?</summary><p>No. FIAT builds the transaction and simulates it, and your wallet signs it. The new mint's key is made in your browser, signs once, and is discarded. FIAT never holds keys or funds.</p></details>
-      <details><summary>Why are launches paused?</summary><p>Launches open when the official $FIAT token is out, so nobody can pass off a launch as ours before then. The CA will only be posted here and on our X.</p></details>
-      <details><summary>How do I find every FIAT coin myself?</summary><p>Every launch lists the FIAT registry address as a read-only account. Look it up on any Solana explorer, or call <code>getSignaturesForAddress</code> on it: each transaction is one launch, and its memo says which currency.</p></details>
+      <details open><summary>What does pairing mean?</summary><p>A label in your coin's launch transaction (<code>fiat:v1:TRY:LIRA</code>). FIAT shows your coin next to that currency. It's not a peg.</p></details>
+      <details><summary>Where do the rates come from?</summary><p>Daily reference rates from the open currency-api. Rows marked LIVE use an intraday quote.</p></details>
+      <details><summary>What does it cost?</summary><p>FIAT takes 0%. You pay pump.fun's normal fees, plus your first buy if you want one.</p></details>
+      <details><summary>Who gets the creator fees?</summary><p>You. Your wallet is the creator on pump.fun.</p></details>
+      <details><summary>Can FIAT touch my funds?</summary><p>No. Your wallet signs. FIAT never holds keys or funds.</p></details>
     </div>
   </div>
 </section>
 </main>
 
 <footer class="foot">
-  <div class="micro" aria-hidden="true"><div class="micro-t">LEGAL TENDER UNTIL FURTHER NOTICE · NOT BACKED BY ANYTHING · PRINTED ON DEMAND · BY DECREE, NOT BY GOLD · LEGAL TENDER UNTIL FURTHER NOTICE · NOT BACKED BY ANYTHING · PRINTED ON DEMAND · BY DECREE, NOT BY GOLD · </div></div>
   <div class="wrap">
-    <div class="foot-top"><div class="seal" aria-hidden="true"><svg viewBox="0 0 120 120"><defs><path id="sc" d="M60 60m-44 0a44 44 0 1 1 88 0a44 44 0 1 1 -88 0"/></defs><circle cx="60" cy="60" r="56" fill="none" stroke="currentColor" stroke-width="2.5"/><circle cx="60" cy="60" r="34" fill="none" stroke="currentColor" stroke-width="1.2"/><text font-size="9.5" letter-spacing="2.2" fill="currentColor"><textPath href="#sc">· BY DECREE · NOT BY GOLD · BY DECREE · NOT BY GOLD</textPath></text><text x="60" y="70" text-anchor="middle" font-size="30" fill="currentColor">¤</text></svg></div>
-      <div><b class="foot-t">fiat</b><p>Every coin has a currency. A pump.fun launcher that pairs your coin with a real currency, on-chain. Not financial advice, not a peg.</p></div>
-      <div class="foot-l"><a href="/launch">Launch</a><a href="#board">Board</a><a href="#spotlight">Spotlight</a><a href="#faq">FAQ</a><a id="footX" href="#" target="_blank" rel="noopener" hidden>X</a></div></div>
+    <div class="foot-top"><div class="seal" aria-hidden="true"><svg viewBox="0 0 120 120"><defs><path id="sc" d="M60 60m-44 0a44 44 0 1 1 88 0a44 44 0 1 1 -88 0"/></defs><circle cx="60" cy="60" r="56" fill="none" stroke="currentColor" stroke-width="2.5"/><circle cx="60" cy="60" r="34" fill="none" stroke="currentColor" stroke-width="1.2"/><text font-size="9.5" letter-spacing="2.2" fill="currentColor"><textPath href="#sc">· BY DECREE · NOT BY GOLD · BY DECREE · NOT BY GOLD</textPath></text><text x="60" y="70" text-anchor="middle" font-size="30" fill="currentColor">$</text></svg></div>
+      <span></span>
+      <div class="foot-l"><a href="/launch">Launch</a><a href="#board">Board</a><a href="#faq">FAQ</a><a id="footX" href="#" target="_blank" rel="noopener" hidden>X</a></div></div>
     <div class="big-word" aria-hidden="true">FIAT</div>
-    <div class="foot-in"><span>fiat · every coin has a currency · not financial advice, not a peg</span><span class="mono">FT 00000001 ¤</span></div>
   </div>
 </footer>
 
@@ -190,6 +173,6 @@
 </aside>
 
 <script type="importmap">{"imports":{"three":"/vendor/three.module.min.js"}}</script>
-<script type="module" src="/js/home.js?v=2"></script>
+<script type="module" src="/js/home.js?v=3"></script>
 </body>
 </html>
