@@ -41,7 +41,7 @@ function show(el) {
 export function fx() {
   document.documentElement.classList.add('fx');
   const bar = document.createElement('div'); bar.className = 'progress'; bar.setAttribute('aria-hidden', 'true'); document.body.appendChild(bar);
-  document.querySelectorAll('.sec-h, .board, .grave, .nums, .melts, .steps, .coins-wrap, .big-word, .tok').forEach(el => pending.add(el));
+  document.querySelectorAll('.sec-h, .board, .grave, .nums, .melts, .steps, .coins-wrap, .big-word, .tok, .press-copy, .seal').forEach(el => pending.add(el));
   addEventListener('scroll', kick, { passive: true }); addEventListener('resize', kick);
   let n = 0; const iv = setInterval(() => { kick(); if (++n > 20) clearInterval(iv); }, 300);
   kick();
@@ -61,6 +61,20 @@ export function fx() {
     big.style.letterSpacing = (0.42 - 0.38 * p).toFixed(3) + 'em'; big.style.opacity = (0.15 + 0.45 * p).toFixed(3);
     big.style.backgroundPosition = `${(p * 240).toFixed(0)}px 0`;
   });
+  // a ring that trails the cursor and opens up over anything clickable
+  if (!RM && matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    const ring = document.createElement('div'); ring.className = 'cursor'; ring.setAttribute('aria-hidden', 'true'); document.body.appendChild(ring);
+    let tx = -100, ty = -100, x = -100, y = -100, on = false, run = false;
+    const loop = () => { x += (tx - x) * 0.2; y += (ty - y) * 0.2; ring.style.transform = `translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,0)`; if (Math.abs(tx - x) + Math.abs(ty - y) > 0.3) requestAnimationFrame(loop); else run = false; };
+    document.addEventListener('pointermove', e => {
+      if (e.pointerType !== 'mouse') return; tx = e.clientX; ty = e.clientY;
+      const hot = !!(e.target.closest && e.target.closest('a, button, [data-c], summary, label, select, input, textarea'));
+      if (hot !== on) { on = hot; ring.classList.toggle('hot', hot); }
+      ring.classList.add('show'); if (!run) { run = true; requestAnimationFrame(loop); }
+    }, { passive: true });
+    document.addEventListener('pointerleave', () => ring.classList.remove('show'));
+    document.addEventListener('pointerdown', () => { ring.classList.add('down'); setTimeout(() => ring.classList.remove('down'), 180); });
+  }
   // a soft glow that follows the cursor across cards
   if (!RM) document.addEventListener('pointermove', e => {
     if (e.pointerType === 'touch') return;

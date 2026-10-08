@@ -32,8 +32,15 @@ function heroCards(code) {
   const el = $('#rotWord'), cards = $('#hcards'); let i = 0;
   setInterval(() => {
     if (document.hidden) return;
-    i = (i + 1) % WORDS.length; el.classList.add('out'); cards.classList.add('swap');
-    setTimeout(() => { el.textContent = WORDS[i][0]; el.classList.remove('out'); el.classList.add('in0'); void el.offsetWidth; el.classList.remove('in0'); heroCards(WORDS[i][1]); cards.classList.remove('swap'); }, 420);
+    i = (i + 1) % WORDS.length; cards.classList.add('swap');
+    const to = WORDS[i][0], from = el.textContent, L = Math.max(to.length, from.length), A = 'abcdefghijklmnopqrstuvwxyz', t0 = performance.now();
+    const step = t => {
+      const k = Math.min(1, (t - t0) / 560);
+      el.textContent = Array.from({ length: L }, (_, j) => (k > (j + 1) / (L + 1) ? to[j] || '' : (j < Math.round(from.length + (to.length - from.length) * k) ? A[(Math.random() * 26) | 0] : ''))).join('');
+      if (k < 1) requestAnimationFrame(step); else { el.textContent = to; }
+    };
+    requestAnimationFrame(step);
+    setTimeout(() => { heroCards(WORDS[i][1]); cards.classList.remove('swap'); }, 380);
   }, 3200);
 })();
 
@@ -271,51 +278,62 @@ async function loadCoins() {
   renderCoins(); if (S.rows.length) renderBoard();
 }
 
-/* ---------- step visuals ---------- */
-function stepVis() {
-  const v1 = $('#v1'), v2 = $('#v2'), v3 = $('#v3');
-  v1.innerHTML = '<div class="v1-in"><div id="v1f"></div><div id="v1r"></div><small id="v1s"></small></div>';
-  let i = 0;
-  const tick = () => {
-    if (document.hidden) return;
-    const pool = S.rows.length ? S.rows : [{ code: 'TRY', cc: 'TR', rate: null, d1: null, name: 'Turkish lira' }];
-    const r = pool[i++ % pool.length];
-    flapSet($('#v1f'), 'USD/' + r.code); flapSet($('#v1r'), fmtRate(r.rate).padStart(9, ' ').slice(-9));
-    $('#v1s').innerHTML = `${esc(r.name)} · ${pct(r.d1)}`;
-  };
-  tick(); setInterval(tick, 2000);
-  // II: a note printed for a different currency every few seconds
-  let j = 0;
-  const print = () => {
-    if (document.hidden || !fontsOk || !S.rows.length) return;
-    const pool = ['TRY', 'ARS', 'NGN', 'JPY', 'INR', 'EGP', 'KRW', 'ZAR'].map(byCode).filter(Boolean); if (!pool.length) return;
-    const r = pool[j++ % pool.length], sym = (r.unit || r.code).toUpperCase().replace(/[^A-Z]/g, '').slice(0, 6);
-    const key = 'v2:' + r.code; let c = NOTES.get(key);
-    if (!c) { c = noteFor({ w: 520, title: `${r.unit} coin`, sub: `$${sym} · paired with ${r.code}`, denom: `fiat:v1:${r.code}:${sym}`, serial: `FT ${r.code} 0000001`, corner: r.code, seal: r.code, sym: r.sym, seedKey: 'v2' + r.code }); NOTES.set(key, c); }
-    if (c.parentNode) return;
-    const old = [...v2.querySelectorAll('canvas')]; v2.appendChild(c); c.classList.add('out'); requestAnimationFrame(() => requestAnimationFrame(() => c.classList.remove('out')));
-    old.forEach(o => { o.classList.add('out'); setTimeout(() => o.remove(), 700); });
-  };
-  S.printNote = print; setInterval(print, 3000);
-  // III: build → sign → stamp
-  const steps = ['building…', 'simulated ✓', 'wallet signs…', 'mint signs…', 'sent ✓', 'confirmed ✓'];
-  v3.innerHTML = '<div class="v3-in"><div style="font-size:13px;color:var(--dim)">fiat:v1:TRY:LIRA</div><div id="v3s" style="font-size:20px;margin-top:6px;color:var(--amb)">building…</div><div class="stamp sm ok" id="v3st">CONFIRMED</div></div>';
-  let s = 0;
-  setInterval(() => {
-    if (document.hidden) return;
-    s = (s + 1) % (steps.length + 2); const st = $('#v3st'), t = $('#v3s');
-    if (s < steps.length) { t.textContent = steps[s]; t.style.color = s >= 4 ? 'var(--up)' : 'var(--amb)'; }
-    if (s === steps.length - 1) { st.classList.remove('slam'); void st.offsetWidth; st.classList.add('on', 'slam'); }
-    if (s === 0) st.classList.remove('on', 'slam');
-  }, 1000);
+/* ---------- how it works: a pinned printing press, scrubbed by scroll ---------- */
+const PP = { cur: ['ARS', 'NGN', 'JPY', 'INR', 'EGP', 'TRY'], ready: false, stamped: false, burst: false, last: '' };
+function ppNote(r) {
+  const key = 'pp:' + r.code; if (NOTES.has(key)) return NOTES.get(key);
+  const c = noteFor({ w: 900, title: r.unit, sub: r.name, denom: `1 USD = ${fmtRate(r.rate)} ${r.code}`, serial: `FT ${r.code} 0000001`, corner: r.code, seal: r.code, sym: r.sym, seedKey: 'pp' + r.code });
+  NOTES.set(key, c); return c;
 }
+function buildPress() {
+  if (PP.ready || !fontsOk || !S.rows.length) return;
+  const t = byCode('TRY'); if (!t) return;
+  PP.ready = true;
+  PP.coin = noteFor({ w: 900, title: 'Lira Coin', sub: 'paired with the Turkish lira', denom: 'fiat:v1:TRY:LIRA', serial: 'FT TRY 0000001', corner: '$LIRA', seal: 'TRY', sym: '₺', seedKey: 'ppcoin' });
+  $('#ppTop').appendChild(PP.coin);
+  pressFrame(scrollY, innerHeight);
+}
+function pressBurst() {
+  const box = $('#ppBurst'); box.innerHTML = '';
+  for (let i = 0; i < 40; i++) {
+    const a = Math.random() * Math.PI * 2, d = 120 + Math.random() * 260, el = document.createElement('i');
+    el.style.cssText = `--dx:${(Math.cos(a) * d).toFixed(0)}px;--dy:${(Math.sin(a) * d * 0.7).toFixed(0)}px;--r:${(Math.random() * 360) | 0}deg;background:${Math.random() < 0.6 ? `rgb(255,${150 + (Math.random() * 70 | 0)},40)` : '#cdd9c1'};animation-delay:${(Math.random() * 0.1).toFixed(2)}s`;
+    box.appendChild(el);
+  }
+  setTimeout(() => { box.innerHTML = ''; }, 1600);
+}
+const ppSec = $('#how');
+function pressFrame(y, vh) {
+  if (!PP.ready) return;
+  const r = ppSec.getBoundingClientRect(); if (r.bottom < 0 || r.top > vh) return;
+  const p = Math.max(0, Math.min(1, -r.top / Math.max(1, r.height - vh)));
+  $('#ppBar').style.transform = `scaleX(${p.toFixed(3)})`;
+  const step = p < 0.34 ? 0 : p < 0.67 ? 1 : 2;
+  $$('#ppSteps li').forEach((li, i) => { li.classList.toggle('on', i === step); li.classList.toggle('past', i < step); });
+  // I: the currency flips until it lands on the lira
+  const n = PP.cur.length, ci = Math.min(n - 1, Math.floor(Math.min(1, p / 0.3) * n)), cur = byCode(PP.cur[ci]) || byCode('TRY');
+  if (cur && PP.last !== cur.code) { PP.last = cur.code; const b = $('#ppBase'); b.innerHTML = ''; b.appendChild(ppNote(cur)); $('#ppCur').innerHTML = `USD/${cur.code} <b>${fmtRate(cur.rate)}</b> ${pct(cur.d1)}`; }
+  // II: the coin note prints over it, left to right
+  const q = Math.max(0, Math.min(1, (p - 0.36) / 0.28));
+  $('#ppTop').style.clipPath = `inset(0 ${(100 - q * 100).toFixed(2)}% 0 0)`;
+  const scan = $('#ppScan'); scan.style.left = (q * 100).toFixed(2) + '%'; scan.style.opacity = q > 0 && q < 1 ? 1 : 0;
+  $('#ppCur').style.opacity = p < 0.4 ? 1 : 0;
+  // III: signed, stamped, live
+  const card = $('#ppCard');
+  card.style.transform = `rotateX(${(8 - p * 8).toFixed(2)}deg) rotateY(${(-10 + p * 14).toFixed(2)}deg) rotate(${(-3 + p * 2).toFixed(2)}deg) scale(${(0.94 + p * 0.06).toFixed(3)})`;
+  const st = $('#ppStamp'), on = p > 0.74;
+  if (on && !PP.stamped) { PP.stamped = true; st.classList.remove('slam'); void st.offsetWidth; st.classList.add('on', 'slam'); }
+  if (!on && PP.stamped) { PP.stamped = false; st.classList.remove('on', 'slam'); }
+  $('#ppMemo').classList.toggle('on', p > 0.8);
+  if (p > 0.84 && !PP.burst) { PP.burst = true; pressBurst(); } if (p < 0.7) PP.burst = false;
+}
+onFrame(pressFrame);
 
 /* ---------- $FIAT + config ---------- */
 function renderToken() {
   const c = S.cfg;
   if (c.registry) { $('#regLink').textContent = short(c.registry); $('#regLink').href = 'https://solscan.io/account/' + c.registry; }
   const xh = c.x ? (String(c.x).startsWith('http') ? c.x : 'https://x.com/' + String(c.x).replace(/^@/, '')) : '';
-  if (xh) { $('#footX').hidden = false; $('#footX').href = xh; }
   const st = $('#tokStamp');
   if (c.ca) {
     $('#tokCa').textContent = c.ca; $('#tokCopy').disabled = false; $('#tokCopy').onclick = () => copy(c.ca, 'Contract address copied');
@@ -327,18 +345,17 @@ function renderToken() {
 
 /* ---------- boot ---------- */
 (async () => {
-  stepVis();
   fontsReady().then(() => {
     fontsOk = true;
     const n = noteCanvas(0.5); n.style.cssText = 'width:100%;height:100%'; $('#tokNoteIn').appendChild(n);
     tilt($('#tokNote')); slamOnView($('#tokStamp'));
-    if (S.rows.length) { worstShown = ''; meltCodes = []; renderSpot(); slamOnView($('#wStamp')); S.printNote && S.printNote(); buildRiver(); }
+    if (S.rows.length) { worstShown = ''; meltCodes = []; renderSpot(); slamOnView($('#wStamp')); buildRiver(); buildPress(); }
   });
   S.cfg = await loadConfig(); renderToken();
   try {
     S.fx = await loadFx(); S.rows = S.fx.list.slice();
     renderBoard(); renderTape(); renderSpot(); setSrc(); heroCards(S.heroCode);
-    if (fontsOk) { slamOnView($('#wStamp')); S.printNote && S.printNote(); buildRiver(); }
+    if (fontsOk) { slamOnView($('#wStamp')); buildRiver(); buildPress(); }
   } catch (e) {
     $('#rows').innerHTML = '<tr><td colspan="9" class="empty">Exchange rates are unreachable right now. Retrying…</td></tr>'; $('#bSrc').textContent = 'Rates offline';
     setTimeout(() => location.reload(), 30000);
