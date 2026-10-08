@@ -1,6 +1,6 @@
 /* FIAT launch: pick a currency, name a coin, sign one pump.fun transaction with the pairing inside. */
 import { $, $$, esc, short, flag, fmtRate, pct, pctTxt, toast, api, loadConfig, loadFx, spark, ui, caChip, W, walletModal, signWith, waitFor, fontsReady, tilt, badge } from './core.js';
-import { coinNoteCanvas, noteFor } from './tex.js';
+import { coinNoteCanvas, noteFor, noteBack } from './tex.js';
 import { fx } from './fx.js';
 
 const S = { cfg: {}, fx: null, cur: null, q: '', csort: 'd1', img: null, imgKind: null, imgEl: null, buy: 0, slip: 10, busy: false, fontsOk: false };
@@ -136,6 +136,8 @@ function renderNote(now) {
     const c = noteFor({ ...o, img, w: 1000, seedKey: 'press' });
     c.style.cssText = 'width:100%;height:100%;display:block'; c.setAttribute('role', 'img'); c.setAttribute('aria-label', `Preview note for ${name}`);
     const box = $('#pNote'); box.innerHTML = ''; box.appendChild(c); S.note = c; $('#saveNote').disabled = false;
+    const back = noteBack({ w: 1000, memo: o.denom, code: r ? r.code : '¤', sym: r ? r.sym : '¤' }); back.style.cssText = 'width:100%;height:100%;display:block';
+    const bb = $('#pBack'); bb.innerHTML = ''; bb.appendChild(back);
   }, now ? 0 : 160);
 }
 $('#saveNote').addEventListener('click', () => {
@@ -151,6 +153,10 @@ function burst() {
   }
   setTimeout(() => { box.innerHTML = ''; }, 1700);
 }
+
+const flip = () => $('#pFlip').classList.toggle('on');
+$('#flipBtn').addEventListener('click', e => { e.stopPropagation(); flip(); });
+$('#pPress').addEventListener('click', e => { if (!e.target.closest('button')) flip(); });
 
 /* ---------- log ---------- */
 function log(msg, cls = 'run') { const l = $('#log'); l.hidden = false; const prev = l.querySelector('.l.run'); if (prev && cls !== 'run') { } const d = document.createElement('div'); d.className = 'l ' + cls; d.innerHTML = `<i>${cls === 'ok' ? '✓' : cls === 'err' ? '!' : '›'}</i><span>${msg}</span>`; l.appendChild(d); l.scrollTop = l.scrollHeight; return d; }
@@ -218,7 +224,7 @@ function done(mint, sig, name, sym, code) {
     <div class="acts"><a class="btn pri" href="https://pump.fun/coin/${esc(mint)}" target="_blank" rel="noopener">Open on pump.fun</a><a class="btn" href="https://solscan.io/tx/${esc(sig)}" target="_blank" rel="noopener">Transaction</a>
     <a class="btn" href="https://x.com/intent/post?text=${encodeURIComponent(text)}&url=${encodeURIComponent('https://pump.fun/coin/' + mint)}" target="_blank" rel="noopener">Share on X</a><a class="btn" href="/#coins">See it on the board</a><a class="btn" href="/launch">Launch another</a></div>`;
   S.launched = sym; toast(`$${sym} launched`); preview();
-  const st = $('#pStamp'); st.textContent = 'PRINTED'; st.classList.remove('slam'); void st.offsetWidth; st.classList.add('on', 'slam'); burst();
+  $('#pFlip').classList.remove('on'); const st = $('#pStamp'); st.textContent = 'PRINTED'; st.classList.remove('slam'); void st.offsetWidth; st.classList.add('on', 'slam'); burst();
 }
 
 /* ---------- boot ---------- */

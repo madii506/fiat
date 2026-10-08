@@ -294,3 +294,29 @@ export function meltCanvas(src, m, pad = 0.18) {
   x.globalAlpha = 1;
   return c;
 }
+
+// the back of a note: rosette, a big FIAT, the on-chain memo
+export function noteBack(o = {}) {
+  const NW = 1400, NH = 600, k = (o.w || 700) / NW;
+  reseed('back' + (o.memo || ''));
+  const c = document.createElement('canvas'); c.width = Math.round(NW * k); c.height = Math.round(NH * k);
+  const x = c.getContext('2d', { willReadFrequently: true }); x.scale(k, k);
+  x.fillStyle = '#c9d6bd'; x.fillRect(0, 0, NW, NH);
+  const g = x.createRadialGradient(NW / 2, NH / 2, 40, NW / 2, NH / 2, 760); g.addColorStop(0, 'rgba(236,236,210,.6)'); g.addColorStop(1, 'rgba(160,190,160,.5)'); x.fillStyle = g; x.fillRect(0, 0, NW, NH);
+  x.save(); x.strokeStyle = INK2; x.globalAlpha = 0.08; x.lineWidth = 1;
+  for (let i = 0; i < 90; i++) { x.beginPath(); for (let t = 0; t <= 1; t += 0.01) { const px = t * NW, py = NH / 2 + Math.sin(t * 9 + i * 0.21) * (60 + i * 2.6) * Math.cos(t * 3 - i * 0.05); t ? x.lineTo(px, py) : x.moveTo(px, py); } x.stroke(); }
+  x.restore();
+  x.strokeStyle = INK; x.lineWidth = 6; x.strokeRect(20, 20, NW - 40, NH - 40); x.lineWidth = 2; x.strokeRect(36, 36, NW - 72, NH - 72);
+  waveBand(x, 40, 55, NW - 80, true, 11, INK, 0.7); waveBand(x, 40, NH - 55, NW - 80, true, 11, INK, 0.7);
+  rosette(x, NW / 2, NH / 2, 250, 230, INK2, 0.55);
+  x.fillStyle = 'rgba(31,58,43,.16)'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.font = '800 300px Cinzel, Georgia, serif'; spaced(x, 'FIAT', NW / 2, NH / 2 + 18, 40);
+  x.fillStyle = INK; x.font = '700 22px Cinzel, Georgia, serif'; x.textBaseline = 'alphabetic'; spaced(x, 'BY DECREE · NOT BY GOLD', NW / 2, 128, 6);
+  x.save(); x.fillStyle = 'rgba(31,58,43,.94)'; x.beginPath(); x.roundRect(NW / 2 - 300, NH - 150, 600, 60, 8); x.fill(); x.restore();
+  x.fillStyle = '#e4ead9'; fitFont(x, o.memo || 'fiat:v1', 500, 30, 540, 'JBM, monospace'); x.textAlign = 'center'; x.fillText(o.memo || 'fiat:v1', NW / 2, NH - 110);
+  const sx = 170, sy = NH / 2; ring(x, sx, sy, 70, 5, AMB); ring(x, sx, sy, 52, 2, AMB); circText(x, '· PRINTED ON DEMAND · PRINTED ON DEMAND ', sx, sy, 61, 10, AMB);
+  x.fillStyle = AMB; x.textBaseline = 'middle'; fitFont(x, o.code || '¤', 800, 30, 70); x.fillText(o.code || '¤', sx, sy + 2);
+  ring(x, NW - sx, sy, 70, 5, AMB); ring(x, NW - sx, sy, 52, 2, AMB); circText(x, '· LEGAL TENDER · UNTIL FURTHER NOTICE ', NW - sx, sy, 61, 10, AMB);
+  x.fillStyle = AMB; fitFont(x, o.sym || '¤', 800, 40, 70); x.fillText(o.sym || '¤', NW - sx, sy + 2);
+  x.setTransform(1, 0, 0, 1, 0, 0); if (c.width * c.height < 900000) noise(x, c.width, c.height, 12);
+  return c;
+}

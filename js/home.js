@@ -223,14 +223,14 @@ function openDrawer(code) {
   const cs = coinsFor(code);
   $('#dCoins').innerHTML = cs.length ? `<div class="k2" style="margin-top:22px;font:500 11px var(--mono);letter-spacing:.12em;color:var(--dim)">COINS PAIRED WITH ${code}</div>` + cs.slice(0, 6).map(c => `<a class="sumrow" style="text-decoration:none" href="https://pump.fun/coin/${esc(c.mint)}" target="_blank" rel="noopener"><span>${esc(c.name)} <span class="amb">$${esc(c.symbol)}</span></span><b>${usd(c.mcap)}</b></a>`).join('') : '';
   $('#dPair').href = '/launch?c=' + code; $('#dPair').textContent = `Pair a coin with the ${r.unit}`;
-  $('#drawer').classList.add('on'); $('#scrim').classList.add('on');
+  $('#drawer').classList.add('on'); $('#scrim').classList.add('on'); if (window.__lenis) window.__lenis.stop();
 }
 function drawRange(r) {
   $$('#dRange button').forEach(b => b.classList.toggle('on', +b.dataset.r === S.range));
   if (S.range === 30) bigChart($('#dChart'), r.s30, S.fx.days || []);
   else bigChart($('#dChart'), r.s1y, S.fx.weeks || []);
 }
-function closeDrawer() { $('#drawer').classList.remove('on'); $('#scrim').classList.remove('on'); S.sel = null; if (S.view === 'table') renderBoard(); }
+function closeDrawer() { $('#drawer').classList.remove('on'); $('#scrim').classList.remove('on'); if (window.__lenis) window.__lenis.start(); S.sel = null; if (S.view === 'table') renderBoard(); }
 $('#dX').onclick = closeDrawer; $('#scrim').onclick = closeDrawer;
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
 $('#dRange').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; S.range = +b.dataset.r; const r = byCode(S.sel); if (r) drawRange(r); });
@@ -254,7 +254,8 @@ function renderCoins() {
   if (S.coinsOk) scramble($('#hsCoins'), S.coins.length); else $('#hsCoins').textContent = '—';
   if (!S.coinsOk) { box.innerHTML = `<div class="coins-empty"><h3>Coin feed offline</h3><p>The chain couldn't be read right now. It retries every minute.</p></div>`; return; }
   if (!S.coins.length) {
-    box.innerHTML = `<div class="coins-empty"><div class="stamp sm amb on" style="position:relative;display:inline-block;margin-bottom:16px">AWAITING FIRST PRINT</div><h3>No coins yet</h3><p>${S.cfg.launches === 'open' ? 'Be the first.' : 'Launches open when $FIAT is out.'}</p>${S.cfg.launches === 'open' ? '<a class="btn pri" href="/launch" style="margin-top:14px">Launch the first one</a>' : ''}</div>`;
+    const ghost = c => `<div class="coin ghost"><div class="coin-ser"><span>FT ${c} ??????</span><span>soon</span></div><div class="coin-h"><span class="gh-img"></span><div><i class="gh-l"></i><i class="gh-l s"></i></div><span class="tag n">vs ${c}</span></div><div class="vs"><div>coin 24h<b class="mu">—</b></div><span class="v">vs</span><div>${c} 24h<b class="mu">—</b></div></div><div class="prog"><i style="width:0"></i></div></div>`;
+    box.innerHTML = `<div class="ghost-wrap"><div class="coins">${['TRY', 'ARS', 'JPY'].map(ghost).join('')}</div><div class="ghost-over"><div class="stamp amb on">AWAITING FIRST PRINT</div><p>${S.cfg.launches === 'open' ? 'Be the first.' : 'Launches open when $FIAT is out.'}</p>${S.cfg.launches === 'open' ? '<a class="btn pri" href="/launch">Launch the first one</a>' : ''}</div></div>`;
     return;
   }
   let list = S.coins.slice();
