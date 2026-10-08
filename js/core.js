@@ -230,7 +230,10 @@ export function tilt(el, host = el.parentElement) {
   host.addEventListener('pointermove', e => { if (e.pointerType === 'touch') return; hov = true; const r = el.getBoundingClientRect(); set(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)), Math.max(0, Math.min(1, (e.clientY - r.top) / r.height))); });
   host.addEventListener('pointerleave', () => { hov = false; t0 = performance.now(); });
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return set(0.5, 0.5);
-  const idle = t => { if (!hov && !document.hidden) { const a = (t - t0) / 1000; set(0.5 + Math.sin(a * 0.6) * 0.32, 0.5 + Math.cos(a * 0.45) * 0.22); } requestAnimationFrame(idle); };
+  // idle sway only while the note is on screen, at ~30fps
+  let vis = false, last = 0;
+  if ('IntersectionObserver' in window) new IntersectionObserver(es => { vis = es[0].isIntersecting; }).observe(el); else vis = true;
+  const idle = t => { if (vis && !hov && !document.hidden && t - last > 33) { last = t; const a = (t - t0) / 1000; set(0.5 + Math.sin(a * 0.6) * 0.32, 0.5 + Math.cos(a * 0.45) * 0.22); } requestAnimationFrame(idle); };
   requestAnimationFrame(idle);
 }
 // split-flap text: only the characters that change flip
@@ -251,3 +254,5 @@ export function slamOnView(el) {
   const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { go(); io.disconnect(); } }), { threshold: 0.6 });
   io.observe(el.parentElement || el);
 }
+// currency mark: the currency's own symbol in a small badge (renders on every OS, unlike flag emoji)
+export const badge = (r, cls = '') => { const s = String((r && r.sym) || '¤'); return `<span class="flag ${cls} ${s.length > 2 ? 'sm' : ''}">${esc(s)}</span>`; };

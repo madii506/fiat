@@ -1,12 +1,13 @@
 /* FIAT home: hero, live rates tape, the board (table + heatmap), spotlight + the melt, coins, $FIAT. */
-import { $, $$, esc, short, flag, fmtRate, pct, pctTxt, usd, ago, toast, copy, api, loadConfig, loadFx, loadLive, applyLive, spark, bigChart, ui, navSpy, caChip, fontsReady, tilt, flapSet, slamOnView } from './core.js';
+import { $, $$, esc, short, flag, fmtRate, pct, pctTxt, usd, ago, toast, copy, api, loadConfig, loadFx, loadLive, applyLive, spark, bigChart, ui, navSpy, caChip, fontsReady, tilt, flapSet, slamOnView, badge } from './core.js';
 import { noteFor, noteCanvas } from './tex.js';
+import { fx, onFrame, scramble } from './fx.js';
 
 const S = { cfg: {}, fx: null, rows: [], live: {}, coins: [], q: '', region: '', sort: 'd1', dir: 1, period: 'd1', coinSort: 'new', sel: null, range: 30, view: 'table', heroCode: 'TRY', pick: 'JPY' };
 const T0 = performance.now(), YEAR = 365 * 86400;
 let fontsOk = false;
 const byCode = c => S.rows.find(r => r.code === c);
-ui(); navSpy();
+ui(); navSpy(); fx();
 
 /* ---------- hero: the 3D stack (falls back to a still) ---------- */
 (async () => {
@@ -25,9 +26,7 @@ function heroCards(code) {
   $('#hc1Rate').textContent = fmtRate(r.rate);
   $('#hc1D').innerHTML = `24h ${pct(r.d1)} · 1y ${pct(r.d365, 1)}`;
   $('#hc1Sp').innerHTML = spark(r.s30, 160, 30);
-  $('#hc2Code').textContent = code;
-  $('#hc2V').innerHTML = r.d365 != null ? `<span class="${r.d365 < 0 ? 'dn' : 'up'}">$${(100 * (1 + r.d365)).toFixed(2)}</span>` : '<span class="mu">—</span>';
-  $('#hc3D').textContent = `$100 in ${code}, at its 1-year pace`;
+  $('#hc3C').textContent = code;
 }
 (() => {
   const el = $('#rotWord'), cards = $('#hcards'); let i = 0;
@@ -60,14 +59,14 @@ function renderBoard() {
   if (S.view === 'heat') return renderHeat();
   const rows = rowsView();
   $$('#bt th').forEach(th => { th.classList.toggle('on', th.dataset.s === S.sort); const t = th.textContent.replace(/[ ▲▼]+$/, ''); th.innerHTML = esc(t) + (th.dataset.s === S.sort ? `<span class="ar">${S.dir > 0 ? '▲' : '▼'}</span>` : ''); });
-  $('#rows').innerHTML = rows.length ? rows.map(r => {
+  $('#rows').innerHTML = rows.length ? rows.map((r, i) => {
     const n = coinsFor(r.code).length;
-    return `<tr data-c="${r.code}" class="${S.sel === r.code ? 'sel' : ''}">
-      <td><div class="cur"><span class="flag">${flag(r.cc)}</span><div><b>${r.code} ${r.live ? '<span class="tag live">LIVE</span>' : ''}</b><small>${esc(r.name)}</small></div></div></td>
-      <td>${fmtRate(r.rate)}</td><td>${pct(r.d1)}</td><td class="h-7">${pct(r.d7)}</td><td class="h-30">${pct(r.d30)}</td><td class="h-1y">${pct(r.d365)}</td>
-      <td class="h-spark">${spark(r.s30)}</td><td class="h-90">${n ? `<span class="tag n">${n}</span>` : '<span class="mu">0</span>'}</td>
+    return `<tr data-c="${r.code}" class="${S.sel === r.code ? 'sel' : ''}" style="--i:${Math.min(i, 24)}">
+      <td><div class="cur">${badge(r)}<div><b>${r.code} ${r.live ? '<span class="tag live">LIVE</span>' : ''}${n ? ` <span class="tag n">${n} coin${n > 1 ? 's' : ''}</span>` : ''}</b><small>${esc(r.name)}</small></div></div></td>
+      <td>${fmtRate(r.rate)}</td><td>${pct(r.d1)}</td><td class="h-7">${pct(r.d7)}</td><td class="h-1y">${pct(r.d365)}</td>
+      <td class="h-spark">${spark(r.s30)}</td>
       <td class="h-pair"><a class="pair" href="/launch?c=${r.code}" data-stop>Pair</a></td></tr>`;
-  }).join('') : '<tr><td colspan="9" class="empty">No currency matches that.</td></tr>';
+  }).join('') : '<tr><td colspan="7" class="empty">No match.</td></tr>';
 }
 const PER = { d1: ['Today', '24h'], d7: ['This week', '7d'], d30: ['This month', '30d'], d365: ['This year', '1y'] };
 function renderBreadth() {
@@ -77,9 +76,8 @@ function renderBreadth() {
   const lo = rows.reduce((a, r) => (r[k] < a[k] ? r : a)), hi = rows.reduce((a, r) => (r[k] > a[k] ? r : a));
   const w = n => (n / rows.length * 100).toFixed(2) + '%';
   $('#brDn').style.width = w(fell.length); $('#brFl').style.width = w(flat); $('#brUp').style.width = w(rose.length);
-  $('#brKv').innerHTML = `<span class="hl">${PER[k][0]}, ${fell.length} of ${rows.length} currencies lost value against the dollar.</span>`
-    + `<span><span class="up">▲ ${rose.length}</span> rose · <span class="dn">▼ ${fell.length}</span> fell${flat ? ` · ${flat} flat` : ''}</span><span>average ${pct(avg)}</span>`
-    + `<span>worst <b>${lo.code}</b> ${pct(lo[k])}</span><span>best <b>${hi.code}</b> ${pct(hi[k])}</span>`;
+  $('#brKv').innerHTML = `<span class="hl">${PER[k][0]}: <span class="dn">${fell.length}</span> of ${rows.length} lost value vs the dollar</span>`
+    + `<span class="br-r"><span>worst <b>${lo.code}</b> ${pct(lo[k])}</span><span>best <b>${hi.code}</b> ${pct(hi[k])}</span></span>`;
 }
 const SCALE = { d1: 0.01, d7: 0.02, d30: 0.05, d365: 0.25 };
 const REGIONS = ['Americas', 'Europe', 'Middle East', 'Africa', 'Asia', 'Oceania'];
@@ -93,13 +91,39 @@ function renderHeat() {
   $('#heatView').innerHTML = rows.length ? REGIONS.map(reg => {
     const rs = rows.filter(r => r.region === reg).sort((a, b) => (a[k] == null) - (b[k] == null) || a[k] - b[k]); if (!rs.length) return '';
     const ok = rs.filter(r => r[k] != null), avg = ok.length ? ok.reduce((a, r) => a + r[k], 0) / ok.length : null;
-    return `<div class="heat-r"><h4>${reg}<span>${rs.length} · average ${pct(avg)}</span></h4><div class="heat-g">${rs.map(r => `<button class="tile" data-c="${r.code}" style="${tileBg(r[k], k)}"><span class="t1"><span>${flag(r.cc)} ${r.code}</span>${r.live ? '<span class="tag live">LIVE</span>' : ''}</span><span class="t2">${pctTxt(r[k], Math.abs(r[k] || 0) >= 0.1 ? 1 : 2)}</span><span class="t3">${esc(r.name)}</span></button>`).join('')}</div></div>`;
+    return `<div class="heat-r"><h4>${reg}<span>${rs.length} · average ${pct(avg)}</span></h4><div class="heat-g">${rs.map(r => `<button class="tile" data-c="${r.code}" style="${tileBg(r[k], k)}"><span class="t1"><span>${r.code}</span>${r.live ? '<span class="tag live">LIVE</span>' : ''}</span><span class="t2">${pctTxt(r[k], Math.abs(r[k] || 0) >= 0.1 ? 1 : 2)}</span><span class="t3">${esc(r.name)}</span></button>`).join('')}</div></div>`;
   }).join('') : '<div class="empty">No currency matches that.</div>';
 }
 function renderTape() {
   const items = S.rows.slice().sort((a, b) => a.code.localeCompare(b.code)).map(r => `<div class="tape-item"><span class="c">USD/${r.code}</span><span class="r">${fmtRate(r.rate)}</span><span class="p ${r.d1 > 0 ? 'up' : r.d1 < 0 ? 'dn' : ''}">${r.d1 == null ? '' : (r.d1 > 0 ? '▲' : r.d1 < 0 ? '▼' : '') + ' ' + pctTxt(r.d1).replace(/^[+−]/, '')}</span></div>`).join('');
   $('#tape').innerHTML = items + items; // twice for a seamless loop
 }
+
+
+/* ---------- the river: two rows of notes that slide as you scroll ---------- */
+let riverDone = false;
+function buildRiver() {
+  if (riverDone || !fontsOk || !S.rows.length) return; riverDone = true;
+  const by = S.rows.filter(r => r.d365 != null).sort((a, b) => a.d365 - b.d365);
+  const top = by.slice(0, 9), rest = ['EUR', 'JPY', 'GBP', 'CHF', 'BRL', 'ZAR', 'KRW', 'MXN', 'INR', 'CNY'].map(byCode).filter(r => r && !top.includes(r)).slice(0, 9);
+  const jobs = [...top.map(r => ['#rv1', r]), ...rest.map(r => ['#rv2', r])];
+  const next = () => {
+    const j = jobs.shift(); if (!j) return;
+    const [row, r] = j, melt = Math.max(0, -(r.d365 || 0));
+    const c = noteFor({ w: 560, title: r.unit, sub: r.name, denom: `1 USD = ${fmtRate(r.rate)} ${r.code}`, serial: `FT ${r.code} 0000001`, corner: r.code, seal: r.code, sym: r.sym, melt, pad: 0, seedKey: 'rv' + r.code });
+    c.className = 'rn'; $(row).appendChild(c); requestAnimationFrame(() => c.classList.add('in'));
+    setTimeout(next, 16);
+  };
+  next();
+}
+const river = $('#river'), rv1 = $('#rv1'), rv2 = $('#rv2'), rvw = $('#rvw');
+onFrame((y, vh) => {
+  const r = river.getBoundingClientRect(); if (r.bottom < -50 || r.top > vh + 50) return;
+  const p = (vh - r.top) / (vh + r.height), w = innerWidth;
+  rv1.style.transform = `translate3d(${(-p * Math.max(0, rv1.scrollWidth - w) * 0.85).toFixed(1)}px,0,0)`;
+  rv2.style.transform = `translate3d(${(-(1 - p) * Math.max(0, rv2.scrollWidth - w) * 0.85).toFixed(1)}px,0,0)`;
+  rvw.style.transform = `translate3d(${(-p * 900).toFixed(1)}px,-50%,0)`;
+});
 
 /* ---------- notes (cached canvases) ---------- */
 const NOTES = new Map();
@@ -117,8 +141,7 @@ let worstShown = '';
 function renderSpot() {
   const k = S.rows.some(r => r.d1 != null && Math.abs(r.d1) > 1e-9) ? 'd1' : 'd7';
   const w = worstBy(k); if (!w) return;
-  $('#wPer').textContent = k === 'd1' ? '24h' : '7 days';
-  $('#worst').innerHTML = `<div class="wn"><span class="fl">${flag(w.cc)}</span>${esc(w.name)}</div><div class="wd">${pct(w[k])} <span class="mu" style="font-size:15px">${k === 'd1' ? 'today' : 'this week'}</span></div><p>1 USD now buys ${fmtRate(w.rate)} ${w.code}. Over a year it moved ${pctTxt(w.d365, 1)} against the dollar${w.d365 < 0 ? ', so its note is dissolved by that much' : ''}.</p>`;
+  $('#worst').innerHTML = `<div class="wn">${esc(w.name)}</div><div class="wd">${pct(w[k])} <span class="mu">${k === 'd1' ? '24h' : '7d'}</span></div>`;
   $('#worstPair').href = '/launch?c=' + w.code; $('#worstOpen').onclick = () => openDrawer(w.code);
   if (fontsOk && worstShown !== w.code + w.rate) {
     worstShown = w.code + w.rate;
@@ -128,10 +151,10 @@ function renderSpot() {
   }
   const g = S.rows.filter(r => r.d365 != null).sort((a, b) => a.d365 - b.d365).slice(0, 6);
   const max = Math.max(...g.map(r => Math.abs(r.d365)), 0.01);
-  $('#grave').innerHTML = g.map((r, i) => `<li data-c="${r.code}"><span class="i">${i + 1}</span><span class="mn" data-n="${r.code}"></span><span class="gx"><span>${flag(r.cc)} ${r.code}<small>${esc(r.name)}</small></span><span class="bar"><i style="width:${(Math.abs(r.d365) / max * 100).toFixed(1)}%"></i></span></span><b>${pct(r.d365, 1)}</b></li>`).join('');
+  $('#grave').innerHTML = g.map((r, i) => `<li data-c="${r.code}"><span class="i">${i + 1}</span><span class="mn" data-n="${r.code}"></span><span class="gx"><span>${r.code}<small>${esc(r.name)}</small></span><span class="bar"><i style="width:${(Math.abs(r.d365) / max * 100).toFixed(1)}%"></i></span></span><b>${pct(r.d365, 1)}</b></li>`).join('');
   if (fontsOk) $$('#grave .mn').forEach(el => el.appendChild(curNote(byCode(el.dataset.n), 208, { key: 'g' })));
   // hero stats
-  $('#hsN').textContent = S.rows.length;
+  scramble($('#hsN'), S.rows.length);
   const hw = worstBy('d1') || w; $('#hsWorst').innerHTML = `${hw.code} <small>${pct(hw.d1 != null ? hw.d1 : hw.d7)}</small>`;
   renderMelt();
 }
@@ -152,9 +175,9 @@ function renderMelt() {
   const opts = S.rows.slice().sort((a, b) => a.code.localeCompare(b.code)).filter(r => r.d365 != null).map(r => `<option value="${r.code}" ${r.code === S.pick ? 'selected' : ''}>${r.code} · ${esc(r.name)}</option>`).join('');
   $('#melts').innerHTML = codes.map((c, i) => {
     const r = byCode(c);
-    return `<div class="mcard" data-c="${c}"><div class="mn" data-n="${c}"></div><div class="mh"><span>${flag(r.cc)} $100 in ${c}</span><small>${i < 3 ? 'worst ' + (i + 1) : 'your pick'}</small></div>
+    return `<div class="mcard" data-c="${c}"><div class="mn" data-n="${c}"></div><div class="mh"><span>$100 in ${c}</span><small>${pct(r.d365, 1)} / yr</small></div>
       ${i === 3 ? `<select aria-label="Pick a currency" id="mPick">${opts}</select>` : ''}
-      <div class="mv" data-v="${c}">$100.00000000</div><div class="ml"><span data-lt>${r.d365 < 0 ? 'lost' : 'gained'} so far</span> <b class="${r.d365 < 0 ? 'dn' : 'up'}" data-l="${c}">$0.00000000</b><br>1-year pace ${pct(r.d365, 1)}</div></div>`;
+      <div class="mv" data-v="${c}">$100.00000000</div></div>`;
   }).join('');
   if (fontsOk) $$('#melts .mn').forEach(el => el.appendChild(curNote(byCode(el.dataset.n), 360, { key: 'm' })));
   const sel = $('#mPick'); if (sel) { sel.addEventListener('click', e => e.stopPropagation()); sel.addEventListener('change', () => { S.pick = sel.value; meltCodes = []; renderMelt(); }); }
@@ -168,27 +191,28 @@ function meltLoop() {
   $$('#melts .mv').forEach(el => {
     const r = byCode(el.dataset.v); if (!r || r.d365 == null) return;
     const v = value(r), d = v - 100, txt = v.toFixed(8);
-    el.innerHTML = `$${txt.slice(0, -4)}<i>${txt.slice(-4)}</i>`;
-    const l = el.parentElement.querySelector('[data-l]'); if (l) l.textContent = `$${Math.abs(d).toFixed(8)}`;
+    el.innerHTML = `$${txt.slice(0, -4)}<i>${txt.slice(-4)}</i>`; el.className = 'mv ' + (d < 0 ? 'dn' : 'up');
   });
   const hr = byCode(S.heroCode);
   if (hr && hr.d365 != null) { const v = value(hr); $('#hc3V').innerHTML = `<span class="${v < 100 ? 'dn' : 'up'}">$${v.toFixed(8)}</span>`; }
 }
-(function tick() { if (!document.hidden && S.rows.length) meltLoop(); setTimeout(() => requestAnimationFrame(tick), 60); })();
+const meltBox = $('.melt'), heroBox = $('.hero');
+const onScreen = el => { const r = el.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight; };
+(function tick() { if (!document.hidden && S.rows.length && (onScreen(meltBox) || onScreen(heroBox))) meltLoop(); setTimeout(() => requestAnimationFrame(tick), 80); })();
 
 /* ---------- drawer ---------- */
 function openDrawer(code) {
   const r = byCode(code); if (!r) return;
   S.sel = code; if (S.view === 'table') renderBoard();
-  $('#dFlag').textContent = flag(r.cc); $('#dName').textContent = r.name; $('#dSub').textContent = `${r.code} · ${r.country} · ${r.region}`;
+  $('#dFlag').outerHTML = badge(r).replace('class="flag', 'id="dFlag" class="flag'); $('#dName').textContent = r.name; $('#dSub').textContent = `${r.code} · ${r.country} · ${r.region}`;
   $('#dRate').innerHTML = `${fmtRate(r.rate)}<small>${r.code} per USD</small>`;
   $('#dNote').innerHTML = r.live ? `<span class="tag live">LIVE</span> intraday quote · ${new Date(r.liveT).toLocaleTimeString()}` : `<span class="tag daily">DAILY</span> reference rate · ${esc(S.fx.date)}`;
   drawRange(r);
   const v30 = (r.s30 || []).filter(x => x > 0), hi = v30.length ? Math.min(...v30) : null, lo = v30.length ? Math.max(...v30) : null;
   $('#dKv').innerHTML = [['24h', pct(r.d1)], ['7 days', pct(r.d7)], ['30 days', pct(r.d30)], ['90 days', pct(r.d90)], ['1 year', pct(r.d365)], ['Symbol', esc(r.sym)], ['30d best (1 USD =)', fmtRate(hi)], ['30d worst (1 USD =)', fmtRate(lo)]]
     .map(([k, v]) => `<div><span>${k}</span><b>${v}</b></div>`).join('');
-  $('#dCalc').innerHTML = (r.d365 != null ? `$100 held in ${r.code} a year ago is worth <b>$${(100 * (1 + r.d365)).toFixed(2)}</b> today, measured in dollars.` : 'One year of history is not available for this currency.')
-    + (S.solUsd ? `<br>1 SOL ≈ <b>${fmtRate(S.solUsd * r.rate)} ${r.code}</b> at today's rate.` : '');
+  $('#dCalc').innerHTML = (r.d365 != null ? `$100 in ${r.code} a year ago → <b>$${(100 * (1 + r.d365)).toFixed(2)}</b> today` : 'No 1-year history.')
+    + (S.solUsd ? `<br>1 SOL ≈ <b>${fmtRate(S.solUsd * r.rate)} ${r.code}</b>` : '');
   const cs = coinsFor(code);
   $('#dCoins').innerHTML = cs.length ? `<div class="k2" style="margin-top:22px;font:500 11px var(--mono);letter-spacing:.12em;color:var(--dim)">COINS PAIRED WITH ${code}</div>` + cs.slice(0, 6).map(c => `<a class="sumrow" style="text-decoration:none" href="https://pump.fun/coin/${esc(c.mint)}" target="_blank" rel="noopener"><span>${esc(c.name)} <span class="amb">$${esc(c.symbol)}</span></span><b>${usd(c.mcap)}</b></a>`).join('') : '';
   $('#dPair').href = '/launch?c=' + code; $('#dPair').textContent = `Pair a coin with the ${r.unit}`;
@@ -220,10 +244,10 @@ $('#view').addEventListener('click', e => {
 /* ---------- coins ---------- */
 function renderCoins() {
   const box = $('#coinBox');
-  $('#hsCoins').textContent = S.coinsOk ? String(S.coins.length) : '—';
+  if (S.coinsOk) scramble($('#hsCoins'), S.coins.length); else $('#hsCoins').textContent = '—';
   if (!S.coinsOk) { box.innerHTML = `<div class="coins-empty"><h3>Coin feed offline</h3><p>The chain couldn't be read right now. It retries every minute.</p></div>`; return; }
   if (!S.coins.length) {
-    box.innerHTML = `<div class="coins-empty"><div class="stamp sm amb on" style="position:relative;display:inline-block;margin-bottom:16px">AWAITING FIRST PRINT</div><h3>No coins paired yet</h3><p>${S.cfg.launches === 'open' ? 'Be the first: pick a currency and launch.' : 'Launches open when $FIAT is out. The first FIAT coins will show up here, read straight from the chain.'}</p>${S.cfg.launches === 'open' ? '<a class="btn pri" href="/launch" style="margin-top:14px">Launch the first one</a>' : ''}</div>`;
+    box.innerHTML = `<div class="coins-empty"><div class="stamp sm amb on" style="position:relative;display:inline-block;margin-bottom:16px">AWAITING FIRST PRINT</div><h3>No coins yet</h3><p>${S.cfg.launches === 'open' ? 'Be the first.' : 'Launches open when $FIAT is out.'}</p>${S.cfg.launches === 'open' ? '<a class="btn pri" href="/launch" style="margin-top:14px">Launch the first one</a>' : ''}</div>`;
     return;
   }
   let list = S.coins.slice();
@@ -235,7 +259,7 @@ function renderCoins() {
     const beat = cc != null && f.d1 != null ? (cc > f.d1 ? 'up' : 'dn') : '';
     return `<a class="coin rv in" href="https://pump.fun/coin/${esc(c.mint)}" target="_blank" rel="noopener">
       <div class="coin-ser"><span>FT ${esc(c.code)} ${esc(String(c.mint).slice(0, 6).toUpperCase())}</span><span>${ago(c.t)}</span></div>
-      <div class="coin-h">${c.image ? `<img src="${esc(c.image)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : `<div class="ph flag" style="width:52px;height:52px;font-size:26px">${flag(f.cc)}</div>`}<div style="min-width:0"><b>${esc(c.name)}</b><small>$${esc(c.symbol)}</small></div><span class="tag n">${flag(f.cc)} ${c.code}</span></div>
+      <div class="coin-h">${c.image ? `<img src="${esc(c.image)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : badge(f, 'ph')}<div style="min-width:0"><b>${esc(c.name)}</b><small>$${esc(c.symbol)}</small></div><span class="tag n">vs ${c.code}</span></div>
       <div class="vs"><div>$${esc(c.symbol)} 24h<b>${pct(cc)}</b></div><span class="v">vs</span><div>${c.code} 24h<b>${pct(f.d1)}</b></div></div>
       <div class="prog" title="bonding curve"><i style="width:${((c.curve ? c.curve.progress : 1) * 100).toFixed(1)}%"></i></div>
       <div class="coin-f"><span>mcap ${usd(c.mcap)}</span><span class="${beat}">${beat === 'up' ? 'beating its fiat' : beat === 'dn' ? 'losing to its fiat' : c.curve && !c.curve.complete ? 'on the curve' : 'graduated'}</span></div></a>`;
@@ -257,7 +281,7 @@ function stepVis() {
     const pool = S.rows.length ? S.rows : [{ code: 'TRY', cc: 'TR', rate: null, d1: null, name: 'Turkish lira' }];
     const r = pool[i++ % pool.length];
     flapSet($('#v1f'), 'USD/' + r.code); flapSet($('#v1r'), fmtRate(r.rate).padStart(9, ' ').slice(-9));
-    $('#v1s').innerHTML = `${flag(r.cc)} ${esc(r.name)} · 24h ${pct(r.d1)}`;
+    $('#v1s').innerHTML = `${esc(r.name)} · ${pct(r.d1)}`;
   };
   tick(); setInterval(tick, 2000);
   // II: a note printed for a different currency every few seconds
@@ -289,18 +313,15 @@ function stepVis() {
 /* ---------- $FIAT + config ---------- */
 function renderToken() {
   const c = S.cfg;
-  $('#regShort').textContent = c.registry ? short(c.registry) : 'not reachable';
   if (c.registry) { $('#regLink').textContent = short(c.registry); $('#regLink').href = 'https://solscan.io/account/' + c.registry; }
   const xh = c.x ? (String(c.x).startsWith('http') ? c.x : 'https://x.com/' + String(c.x).replace(/^@/, '')) : '';
   if (xh) { $('#footX').hidden = false; $('#footX').href = xh; }
   const st = $('#tokStamp');
   if (c.ca) {
     $('#tokCa').textContent = c.ca; $('#tokCopy').disabled = false; $('#tokCopy').onclick = () => copy(c.ca, 'Contract address copied');
-    $('#tokNote2').textContent = 'The official $FIAT contract address:';
     $('#tokLinks').innerHTML = `<a class="btn pri" href="https://pump.fun/coin/${esc(c.ca)}" target="_blank" rel="noopener">Buy on pump.fun</a><a class="btn" href="https://dexscreener.com/solana/${esc(c.ca)}" target="_blank" rel="noopener">Chart</a>${xh ? `<a class="btn" href="${esc(xh)}" target="_blank" rel="noopener">X</a>` : ''}`;
     st.textContent = 'IN CIRCULATION'; st.classList.add('ok');
   } else if (xh) $('#tokLinks').innerHTML = `<a class="btn" href="${esc(xh)}" target="_blank" rel="noopener">Follow on X</a>`;
-  if (c.launches === 'open') $$('#token li')[0].textContent = 'Launches are open: pick a currency and launch in one transaction.';
   caChip(c);
 }
 
@@ -311,13 +332,13 @@ function renderToken() {
     fontsOk = true;
     const n = noteCanvas(0.5); n.style.cssText = 'width:100%;height:100%'; $('#tokNoteIn').appendChild(n);
     tilt($('#tokNote')); slamOnView($('#tokStamp'));
-    if (S.rows.length) { worstShown = ''; meltCodes = []; renderSpot(); slamOnView($('#wStamp')); S.printNote && S.printNote(); }
+    if (S.rows.length) { worstShown = ''; meltCodes = []; renderSpot(); slamOnView($('#wStamp')); S.printNote && S.printNote(); buildRiver(); }
   });
   S.cfg = await loadConfig(); renderToken();
   try {
     S.fx = await loadFx(); S.rows = S.fx.list.slice();
     renderBoard(); renderTape(); renderSpot(); setSrc(); heroCards(S.heroCode);
-    if (fontsOk) { slamOnView($('#wStamp')); S.printNote && S.printNote(); }
+    if (fontsOk) { slamOnView($('#wStamp')); S.printNote && S.printNote(); buildRiver(); }
   } catch (e) {
     $('#rows').innerHTML = '<tr><td colspan="9" class="empty">Exchange rates are unreachable right now. Retrying…</td></tr>'; $('#bSrc').textContent = 'Rates offline';
     setTimeout(() => location.reload(), 30000);

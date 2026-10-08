@@ -1,9 +1,10 @@
 /* FIAT launch: pick a currency, name a coin, sign one pump.fun transaction with the pairing inside. */
-import { $, $$, esc, short, flag, fmtRate, pct, pctTxt, toast, api, loadConfig, loadFx, spark, ui, caChip, W, walletModal, signWith, waitFor, fontsReady, tilt } from './core.js';
+import { $, $$, esc, short, flag, fmtRate, pct, pctTxt, toast, api, loadConfig, loadFx, spark, ui, caChip, W, walletModal, signWith, waitFor, fontsReady, tilt, badge } from './core.js';
 import { coinNoteCanvas, noteFor } from './tex.js';
+import { fx } from './fx.js';
 
 const S = { cfg: {}, fx: null, cur: null, q: '', csort: 'd1', img: null, imgKind: null, imgEl: null, buy: 0, slip: 10, busy: false, fontsOk: false };
-ui();
+ui(); fx();
 fontsReady().then(() => { S.fontsOk = true; renderNote(true); });
 tilt($('#pHolo'), $('.press-note'));
 
@@ -13,14 +14,12 @@ function renderGrid() {
   let list = (S.fx ? S.fx.list : []).filter(r => !q || [r.code, r.name, r.country, r.unit].some(x => String(x).toLowerCase().includes(q)));
   if (S.csort === 'code') list.sort((a, b) => a.code.localeCompare(b.code));
   else list.sort((a, b) => (a[S.csort] == null) - (b[S.csort] == null) || (a[S.csort] || 0) - (b[S.csort] || 0));
-  $('#cgrid').innerHTML = list.length ? list.map(r => `<button type="button" class="cbtn ${S.cur && S.cur.code === r.code ? 'on' : ''}" data-c="${r.code}"><span class="flag">${flag(r.cc)}</span><span><b>${r.code}</b><small>${pct(S.csort === 'd365' ? r.d365 : r.d1)} <span class="mu">${fmtRate(r.rate)}</span></small></span></button>`).join('') : '<div class="empty">No match.</div>';
+  $('#cgrid').innerHTML = list.length ? list.map(r => `<button type="button" class="cbtn ${S.cur && S.cur.code === r.code ? 'on' : ''}" data-c="${r.code}">${badge(r)}<span><b>${r.code}</b><small>${pct(S.csort === 'd365' ? r.d365 : r.d1)}</small></span></button>`).join('') : '<div class="empty">No match.</div>';
 }
 function pick(code) {
   const r = S.fx && S.fx.list.find(x => x.code === code); if (!r) return;
   S.cur = r; renderGrid();
-  $('#curSel').innerHTML = `${flag(r.cc)} ${r.code} · ${esc(r.unit)}`;
-  const cp = $('#curPick'); cp.hidden = false;
-  cp.innerHTML = `<span class="flag">${flag(r.cc)}</span><div><b>${esc(r.name)}</b><small>1 USD = ${fmtRate(r.rate)} ${r.code} · 24h ${pctTxt(r.d1)} · 1y ${pctTxt(r.d365, 1)}</small></div>${spark(r.s30, 130, 34)}`;
+  $('#curSel').innerHTML = `${esc(r.name)}`;
   if (!$('#fName').value) { $('#fName').placeholder = `${cap(r.unit)} Coin`; }
   if (!$('#fSym').value) { $('#fSym').placeholder = r.unit.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 10) || r.code; }
   if (S.imgKind === 'note') makeNote();
@@ -82,7 +81,7 @@ window.addEventListener('paste', e => { const it = [...(e.clipboardData && e.cli
 const fBuy = $('#fBuy');
 function setBuy(v, fromInput) {
   let n = Number(String(v).replace(',', '.')); if (!isFinite(n) || n < 0) n = 0; n = Math.min(50, n);
-  S.buy = n; if (!fromInput) fBuy.value = String(n);
+  S.buy = n; if (!fromInput) fBuy.value = String(n); $('#slipF').hidden = !(n > 0);
   $$('#buyP button').forEach(b => b.classList.toggle('on', Number(b.dataset.v) === n)); preview();
 }
 $('#buyP').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setBuy(b.dataset.v); });
@@ -93,14 +92,9 @@ $('#slip').addEventListener('click', e => { const b = e.target.closest('button')
 function preview() {
   const r = S.cur, name = fName.value || fName.placeholder || 'Your coin', sym = fSym.value || fSym.placeholder || 'TICKER';
   $('#pName').innerHTML = `${esc(name)}<small>$${esc(sym)}</small>`;
-  $('#pDesc').textContent = fDesc.value || (r ? `Paired with the ${r.name}.` : 'Pick a currency and name your coin.');
-  $('#pImg').innerHTML = S.img ? `<img src="${S.img}" alt="">` : (r ? `<span style="font-size:30px">${flag(r.cc)}</span>` : 'picture');
-  $('#pBadge').textContent = r ? `${flag(r.cc)} vs ${r.code}` : 'vs —';
-  if (r) {
-    $('#pChart').innerHTML = `<span>${r.code} vs USD · 30 days · ${pctTxt(r.d30)}</span>` + spark(r.s30, 300, 74).replace('class="spark"', 'class="spark" style="width:100%;height:100%"');
-    $('#pFx').innerHTML = `${r.code} 24h<b>${pct(r.d1)}</b>`;
-  }
-  $('#pTx').innerHTML = `<span class="c">// your launch transaction</span>\n<span class="k">1</span> pump.fun create_v2  <span class="s">${esc(name.slice(0, 18))} · $${esc(sym)}</span>\n${S.buy > 0 ? `<span class="k">2</span> pump.fun buy        <span class="s">${S.buy} SOL · max +${S.slip}%</span>\n` : ''}<span class="k">${S.buy > 0 ? 3 : 2}</span> memo               <span class="s">"fiat:v1:${r ? r.code : '???'}:${esc(sym)}"</span>\n<span class="k">${S.buy > 0 ? 4 : 3}</span> registry tag       <span class="s">${esc(short(S.cfg.registry || ''))}</span>\n<span class="c">// signers: your wallet + the new mint</span>`;
+  $('#pImg').innerHTML = S.img ? `<img src="${S.img}" alt="">` : (r ? esc(r.sym) : '?');
+  if (r) $('#pChart').innerHTML = `<span>${r.code} · 30d ${pct(r.d30)} · 24h ${pct(r.d1)}</span>` + spark(r.s30, 300, 74).replace('class="spark"', 'class="spark" style="width:100%;height:100%"');
+  $('#pTx').innerHTML = `<span class="k">1</span> pump.fun create_v2  <span class="s">${esc(name.slice(0, 18))} · $${esc(sym)}</span>\n${S.buy > 0 ? `<span class="k">2</span> pump.fun buy        <span class="s">${S.buy} SOL · max +${S.slip}%</span>\n` : ''}<span class="k">${S.buy > 0 ? 3 : 2}</span> memo               <span class="s">"fiat:v1:${r ? r.code : '???'}:${esc(sym)}"</span>\n<span class="k">${S.buy > 0 ? 4 : 3}</span> registry tag       <span class="s">${esc(short(S.cfg.registry || ''))}</span>`;
   const ok1 = !!r, ok2 = !!(fName.value.trim() && fSym.value.trim() && S.img);
   $('#ps1').classList.toggle('ok', ok1); $('#ps2').classList.toggle('ok', ok2); $('#ps3').classList.toggle('ok', !!S.launched);
   $$('.lp-grid .box').forEach((b, i) => b.classList.toggle('ok', [ok1, ok2, !!S.launched][i]));
@@ -111,11 +105,9 @@ function summary() {
   const fees = 0.02 + 0.0025;
   const max = S.buy * (1 + S.slip / 100);
   $('#sum').innerHTML = [
-    ['Currency', S.cur ? `${flag(S.cur.cc)} ${S.cur.code}` : '—'],
-    ['First buy', S.buy > 0 ? `${S.buy} SOL (max ${max.toFixed(3)})` : 'none'],
-    ['pump.fun rent + network', `≈ ${fees.toFixed(3)} SOL`],
+    ['Fees (pump.fun + network)', `≈ ${fees.toFixed(3)} SOL`],
     ['FIAT fee', '0'],
-    ['Have in your wallet', `≈ ${(fees + max + 0.005).toFixed(3)} SOL`],
+    ['You need', `≈ ${(fees + max + 0.005).toFixed(3)} SOL`],
   ].map(([k, v]) => `<div class="sumrow"><span>${k}</span><b>${v}</b></div>`).join('');
   goState();
 }
@@ -161,7 +153,7 @@ function burst() {
 }
 
 /* ---------- log ---------- */
-function log(msg, cls = 'run') { const l = $('#log'); const prev = l.querySelector('.l.run'); if (prev && cls !== 'run') { } const d = document.createElement('div'); d.className = 'l ' + cls; d.innerHTML = `<i>${cls === 'ok' ? '✓' : cls === 'err' ? '!' : '›'}</i><span>${msg}</span>`; l.appendChild(d); l.scrollTop = l.scrollHeight; return d; }
+function log(msg, cls = 'run') { const l = $('#log'); l.hidden = false; const prev = l.querySelector('.l.run'); if (prev && cls !== 'run') { } const d = document.createElement('div'); d.className = 'l ' + cls; d.innerHTML = `<i>${cls === 'ok' ? '✓' : cls === 'err' ? '!' : '›'}</i><span>${msg}</span>`; l.appendChild(d); l.scrollTop = l.scrollHeight; return d; }
 const okLine = (d, msg) => { d.className = 'l ok'; d.querySelector('i').textContent = '✓'; if (msg) d.querySelector('span').innerHTML = msg; };
 
 /* ---------- wallet + launch ---------- */
@@ -222,7 +214,7 @@ function done(mint, sig, name, sym, code) {
   const r = S.cur;
   const text = `I just paired $${sym} with the ${r.unit} (${code}) on fiat. my coin vs. the ${r.unit}.`;
   $('#done').hidden = false;
-  $('#done').innerHTML = `<h3>$${esc(sym)} is live, paired with ${flag(r.cc)} ${code}</h3><div class="mu mono" style="font-size:12px;word-break:break-all">${esc(mint)}</div>
+  $('#done').innerHTML = `<h3>$${esc(sym)} is live · vs ${code}</h3><div class="mu mono" style="font-size:12px;word-break:break-all">${esc(mint)}</div>
     <div class="acts"><a class="btn pri" href="https://pump.fun/coin/${esc(mint)}" target="_blank" rel="noopener">Open on pump.fun</a><a class="btn" href="https://solscan.io/tx/${esc(sig)}" target="_blank" rel="noopener">Transaction</a>
     <a class="btn" href="https://x.com/intent/post?text=${encodeURIComponent(text)}&url=${encodeURIComponent('https://pump.fun/coin/' + mint)}" target="_blank" rel="noopener">Share on X</a><a class="btn" href="/#coins">See it on the board</a><a class="btn" href="/launch">Launch another</a></div>`;
   S.launched = sym; toast(`$${sym} launched`); preview();
@@ -233,7 +225,6 @@ function done(mint, sig, name, sym, code) {
 (async () => {
   S.cfg = await loadConfig(); caChip(S.cfg);
   $('#paused').hidden = S.cfg.launches === 'open';
-  if (S.cfg.registry) $('#regChip').textContent = 'FIAT registry ' + short(S.cfg.registry);
   try { S.fx = await loadFx(); } catch (e) { $('#cgrid').innerHTML = '<div class="empty">Exchange rates are unreachable right now. Reload in a minute.</div>'; }
   renderGrid();
   const want = (new URLSearchParams(location.search).get('c') || '').toUpperCase();
